@@ -1,6 +1,6 @@
 # MacroGrid
 
-Simple command button mod for Minecraft 1.21.11 (Fabric).
+Simple command button mod for Minecraft 26.1 (Fabric).
 
 
 ##  How to Build
