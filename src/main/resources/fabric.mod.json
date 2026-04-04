@@ -1,33 +1,33 @@
 {
-  "schemaVersion": 1,
-  "id": "commandguibuttons",
-  "version": "3.1",
-  "name": "CmdDeck",
-  "description": "A customizable GUI for command macros.",
-  "authors": [
-    "o0h"
-  ],
-  "contact": {
-    "sources": "https://github.com/realo0h/MacroGrid"
-  },
-  "license": "GPL-3.0",
-  "icon": "icon.png",
-  "environment": "client",
-  "entrypoints": {
-    "client": [
-      "com.commandguibuttons.gui.CommandGUIButtons"
-    ]
-  },
-  "depends": {
-    "fabricloader": ">=0.16.0",
-    "minecraft": "1.21.11",
-    "java": ">=21",
-    "fabric-api": "*"
-  },
-  "suggests": {
-    "another-mod": "*"
-  },
-  "mixins": [
-    "commandguibuttons.mixins.json"
-  ]
+	"schemaVersion": 1,
+	"id": "macrogrid",
+	"version": "${version}",
+	"name": "MacroGrid",
+	"description": "A customizable GUI for command macros.",
+	"authors": [
+		"o0h"
+	],
+	"contact": {
+		"homepage": "https://modrinth.com/mod/macrogrid",
+		"sources": "https://github.com/realo0h/MacroGrid"
+	},
+	"license": "MIT",
+	"icon": "assets/macrogrid/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"client": [
+			"real.o0h.MacroGrid"
+		],
+		"mixins": [
+    		"o0h.mixins.json"
+  		]
+
+	}, 
+
+	"depends": {
+		"fabricloader": ">=0.18.5",
+		"minecraft": "~26.1",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
 }
