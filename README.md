@@ -14,4 +14,4 @@ Simple command button mod for Minecraft 26.1 (Fabric).
 ## Requirements
 To run the mod in-game, you need:
 * Fabric API
-* owo-lib
+
