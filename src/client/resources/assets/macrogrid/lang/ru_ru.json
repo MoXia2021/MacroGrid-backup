@@ -1,0 +1,50 @@
+{
+  "key.categories.macrogrid.general": "MacroGrid",
+  "key.macrogrid.open_gui": "Открыть MacroGrid",
+
+  "macrogrid.title": "MacroGrid",
+  "macrogrid.count": " (%s/%s)",
+
+  "macrogrid.search.hint": "Поиск...",
+  "macrogrid.search.empty": "Пока нет кнопок - нажмите + Добавить",
+  "macrogrid.search.noresults": "Ничего не найдено по запросу \"%s\"",
+
+  "macrogrid.toolbar.add": "+ Добавить",
+  "macrogrid.toolbar.edit": "Изменить",
+  "macrogrid.toolbar.move": "Двигать",
+  "macrogrid.toolbar.delete": "Удалить",
+
+  "macrogrid.hint.edit": "Нажмите на кнопку, чтобы изменить её",
+  "macrogrid.hint.move.pick": "Нажмите на кнопку, чтобы взять её",
+  "macrogrid.hint.move.swap": "Нажмите на другую кнопку, чтобы поменять местами",
+  "macrogrid.hint.delete.pick": "Нажмите на кнопку, чтобы удалить её",
+  "macrogrid.hint.delete.confirm": "Нажмите ещё раз, чтобы подтвердить удаление",
+
+  "macrogrid.tooltip.delete.confirm": "Нажмите ещё раз для подтверждения",
+  "macrogrid.tooltip.delete": "Нажмите, чтобы УДАЛИТЬ",
+  "macrogrid.tooltip.edit": "Нажмите, чтобы ИЗМЕНИТЬ",
+  "macrogrid.tooltip.move.pick": "Нажмите, чтобы взять",
+  "macrogrid.tooltip.move.swap": "Нажмите, чтобы поменять местами",
+
+  "macrogrid.edit.title.add": "Добавление кнопки",
+  "macrogrid.edit.title.edit": "Изменение кнопки",
+  "macrogrid.edit.name.hint": "Название кнопки...",
+  "macrogrid.edit.color": "Цвет: %s",
+  "macrogrid.edit.color.default": "Цвет: По умолчанию",
+  "macrogrid.edit.icon": "Иконка: %s %s",
+  "macrogrid.edit.icon.none": "Иконка: Нет",
+  "macrogrid.edit.preview": "Превью",
+  "macrogrid.edit.preview.noname": "(без названия)",
+  "macrogrid.edit.commands": "Команды",
+  "macrogrid.edit.commands.empty": "Пока нет действий - добавьте команду или сообщение ниже",
+  "macrogrid.edit.addcmd": "+ Команда",
+  "macrogrid.edit.addmsg": "+ Сообщение",
+  "macrogrid.edit.save": "Сохранить",
+  "macrogrid.edit.cancel": "Отмена",
+  "macrogrid.edit.cmdbadge": "КМД",
+  "macrogrid.edit.msgbadge": "СООБЩ",
+
+  "macrogrid.icon.title": "Выбор иконки",
+  "macrogrid.icon.none": "Нет",
+  "macrogrid.icon.cancel": "Отмена"
+}

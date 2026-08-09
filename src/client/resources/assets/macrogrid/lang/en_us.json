@@ -1,0 +1,50 @@
+{
+  "key.categories.macrogrid.general": "MacroGrid",
+  "key.macrogrid.open_gui": "Open MacroGrid",
+
+  "macrogrid.title": "MacroGrid",
+  "macrogrid.count": " (%s/%s)",
+
+  "macrogrid.search.hint": "Search...",
+  "macrogrid.search.empty": "No buttons yet - press + Add",
+  "macrogrid.search.noresults": "No results for \"%s\"",
+
+  "macrogrid.toolbar.add": "+ Add",
+  "macrogrid.toolbar.edit": "Edit",
+  "macrogrid.toolbar.move": "Move",
+  "macrogrid.toolbar.delete": "Del",
+
+  "macrogrid.hint.edit": "Click a button to edit it",
+  "macrogrid.hint.move.pick": "Click a button to pick it up",
+  "macrogrid.hint.move.swap": "Click another button to swap places",
+  "macrogrid.hint.delete.pick": "Click a button to delete it",
+  "macrogrid.hint.delete.confirm": "Click it again to confirm deletion",
+
+  "macrogrid.tooltip.delete.confirm": "Click again to confirm deletion",
+  "macrogrid.tooltip.delete": "Click to DELETE",
+  "macrogrid.tooltip.edit": "Click to EDIT",
+  "macrogrid.tooltip.move.pick": "Click to pick up",
+  "macrogrid.tooltip.move.swap": "Click to swap here",
+
+  "macrogrid.edit.title.add": "Add Button",
+  "macrogrid.edit.title.edit": "Edit Button",
+  "macrogrid.edit.name.hint": "Button name...",
+  "macrogrid.edit.color": "Color: %s",
+  "macrogrid.edit.color.default": "Color: Default",
+  "macrogrid.edit.icon": "Icon: %s %s",
+  "macrogrid.edit.icon.none": "Icon: None",
+  "macrogrid.edit.preview": "Preview",
+  "macrogrid.edit.preview.noname": "(no name)",
+  "macrogrid.edit.commands": "Commands",
+  "macrogrid.edit.commands.empty": "No actions yet - add a Command or Message below",
+  "macrogrid.edit.addcmd": "+ Command",
+  "macrogrid.edit.addmsg": "+ Message",
+  "macrogrid.edit.save": "Save",
+  "macrogrid.edit.cancel": "Cancel",
+  "macrogrid.edit.cmdbadge": "CMD",
+  "macrogrid.edit.msgbadge": "MSG",
+  "key.category.macrogrid.general": "MacroGrid",
+  "macrogrid.icon.title": "Choose an Icon",
+  "macrogrid.icon.none": "None",
+  "macrogrid.icon.cancel": "Cancel"
+}
