@@ -56,6 +56,10 @@ public class ButtonGuiScreen extends Screen {
     private int scroll = 0;
     private int maxScroll = 0;
 
+    // Click-and-drag scrolling state for the grid area.
+    private boolean dragging = false;
+    private double dragLastY = 0;
+
     private static boolean OPEN = false;
     public static boolean isOpen() { return OPEN; }
     static void setOpen(boolean open) { OPEN = open; }
@@ -112,21 +116,21 @@ public class ButtonGuiScreen extends Screen {
 
         panelW = Math.max(360, Math.min(400, toolbarNeeded + 20));
 
-        int totalCount = ButtonManager.getButtons().size();
-        int neededRows = Math.max(1, (int) Math.ceil(totalCount / (double) COLS));
-        int rows = Math.min(VISIBLE_ROWS, neededRows);
-
+        // Grid area height adapts to the window: the panel fills the window
+        // height (minus a small margin) so the grid is as large as possible,
+        // while the action bar below stays pinned and only the grid scrolls.
         int titleH = 26;
         int tabGap = 4;
         searchH = 16;
-        int gridH = rows * CARD_H + (rows - 1) * CARD_GAP;
         int hintGap = 5;
         int hintH = 12;
         int barGap = 8;
         int barH = 20;
         int bottomPad = 10;
         int searchGridGap = 8;
-        panelH = titleH + TAB_H + tabGap + searchH + searchGridGap + gridH + hintGap + hintH + barGap + barH + bottomPad;
+        int chromeH = titleH + TAB_H + tabGap + searchH + searchGridGap + hintGap + hintH + barGap + barH + bottomPad;
+        int gridH = Math.max(80, this.height - 24 - chromeH);
+        panelH = chromeH + gridH;
 
         panelX = (this.width - panelW) / 2;
         panelY = (this.height - panelH) / 2;
@@ -420,11 +424,12 @@ public class ButtonGuiScreen extends Screen {
         g.disableScissor();
 
         if (maxScroll > 0) {
-            int trackX = gridRect.x() + gridRect.w() + 2;
-            g.fill(trackX, gridRect.y(), trackX + 2, gridRect.y() + gridRect.h(), 0x22FFFFFF);
-            int thumbH = Math.max(10, gridRect.h() * gridRect.h() / (gridRect.h() + maxScroll));
+            int trackW = 5;
+            int trackX = gridRect.x() + gridRect.w() + 3;
+            g.fill(trackX, gridRect.y(), trackX + trackW, gridRect.y() + gridRect.h(), 0x3DFFFFFF);
+            int thumbH = Math.max(12, gridRect.h() * gridRect.h() / (gridRect.h() + maxScroll));
             int thumbY = gridRect.y() + (int) ((gridRect.h() - thumbH) * (scroll / (float) maxScroll));
-            g.fill(trackX, thumbY, trackX + 2, thumbY + thumbH, COL_ACCENT);
+            g.fill(trackX, thumbY, trackX + trackW, thumbY + thumbH, COL_ACCENT);
         }
     }
 
@@ -610,6 +615,10 @@ public class ButtonGuiScreen extends Screen {
                         return true;
                     }
                 }
+                // Click on empty grid space: start click-and-drag scrolling.
+                dragging = true;
+                dragLastY = mouseY;
+                return true;
             }
         }
 
@@ -640,6 +649,23 @@ public class ButtonGuiScreen extends Screen {
             return true;
         }
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
+    @Override
+    public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+        if (dragging && maxScroll > 0) {
+            scroll -= (int) (event.y() - dragLastY);
+            scroll = Math.max(0, Math.min(maxScroll, scroll));
+            dragLastY = event.y();
+            return true;
+        }
+        return super.mouseDragged(event, dragX, dragY);
+    }
+
+    @Override
+    public boolean mouseReleased(MouseButtonEvent event) {
+        dragging = false;
+        return super.mouseReleased(event);
     }
 
     @Override

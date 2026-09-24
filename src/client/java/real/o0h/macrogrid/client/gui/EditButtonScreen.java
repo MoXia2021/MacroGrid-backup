@@ -57,6 +57,10 @@ public class EditButtonScreen extends Screen {
     private EditBox activeField;
     private int activeRow = -1;
 
+    // Click-and-drag scrolling state for the command list.
+    private boolean dragging = false;
+    private double dragLastY = 0;
+
     private int panelX, panelY, panelW, panelH;
     private Rect nameFieldRect, colorRect, iconRect, previewRect;
     private Rect cmdListRect, addCmdRect, addMsgRect, saveRect, cancelRect;
@@ -106,13 +110,18 @@ public class EditButtonScreen extends Screen {
         int appearH = 20;
         int previewH = 16;
         int cmdLabelH = 12;
-        int cmdListH = VISIBLE_ROWS * ROW_H + (VISIBLE_ROWS - 1) * 2;
         int addRowH = 20;
         int saveRowH = 20;
         int bottomPad = 10;
 
-        panelH = titleH + nameH + gap + appearH + gap + previewH + gap
-                + cmdLabelH + cmdListH + gap + addRowH + gap + saveRowH + bottomPad;
+        // Command list height adapts to the window: the panel fills the
+        // window height (minus a small margin) so the list is as large as
+        // possible, while Save/Cancel stay pinned at the bottom.
+        int chromeH = titleH + nameH + gap + appearH + gap + previewH + gap
+                + cmdLabelH + gap + addRowH + gap + saveRowH + bottomPad;
+        int cmdListH = Math.max(60, this.height - 24 - chromeH);
+
+        panelH = chromeH + cmdListH;
         panelY = (this.height - panelH) / 2;
 
         y = panelY + titleH;
@@ -290,11 +299,12 @@ public class EditButtonScreen extends Screen {
         g.disableScissor();
 
         if (maxScroll > 0) {
-            int trackX = cmdListRect.x() + cmdListRect.w() + 2;
-            g.fill(trackX, cmdListRect.y(), trackX + 2, cmdListRect.y() + cmdListRect.h(), 0x22FFFFFF);
-            int thumbH = Math.max(8, cmdListRect.h() * cmdListRect.h() / (cmdListRect.h() + maxScroll));
+            int trackW = 5;
+            int trackX = cmdListRect.x() + cmdListRect.w() + 3;
+            g.fill(trackX, cmdListRect.y(), trackX + trackW, cmdListRect.y() + cmdListRect.h(), 0x3DFFFFFF);
+            int thumbH = Math.max(12, cmdListRect.h() * cmdListRect.h() / (cmdListRect.h() + maxScroll));
             int thumbY = cmdListRect.y() + (int) ((cmdListRect.h() - thumbH) * (scroll / (float) maxScroll));
-            g.fill(trackX, thumbY, trackX + 2, thumbY + thumbH, COL_ACCENT);
+            g.fill(trackX, thumbY, trackX + trackW, thumbY + thumbH, COL_ACCENT);
         }
     }
 
@@ -439,6 +449,10 @@ public class EditButtonScreen extends Screen {
                     }
                     if (rr.del.contains(mouseX, mouseY)) { removeRow(i); return true; }
                 }
+                // Click on empty command-list space: start drag scrolling.
+                dragging = true;
+                dragLastY = mouseY;
+                return true;
             }
         }
         return super.mouseClicked(click, doubled);
@@ -451,5 +465,22 @@ public class EditButtonScreen extends Screen {
             return true;
         }
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
+    @Override
+    public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+        if (dragging && maxScroll > 0) {
+            scroll -= (int) (event.y() - dragLastY);
+            scroll = Math.max(0, Math.min(maxScroll, scroll));
+            dragLastY = event.y();
+            return true;
+        }
+        return super.mouseDragged(event, dragX, dragY);
+    }
+
+    @Override
+    public boolean mouseReleased(MouseButtonEvent event) {
+        dragging = false;
+        return super.mouseReleased(event);
     }
 }
