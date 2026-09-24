@@ -392,6 +392,10 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
                         ? ButtonData.CommandType.MESSAGE
                         : ButtonData.CommandType.COMMAND;
                     rebuildCommandList();
+                    // Force-refresh the recreated text boxes on the next tick;
+                    // without this the field text would stay invisible until
+                    // the field is clicked again.
+                    needsRefresh = true;
                 }
             );
             typeBtn.horizontalSizing(Sizing.fixed(36));
