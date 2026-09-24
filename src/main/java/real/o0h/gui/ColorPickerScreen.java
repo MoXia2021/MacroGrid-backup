@@ -1,10 +1,11 @@
 package real.o0h.gui;
 
-import real.o0h.config.ButtonData;
 import io.wispforest.owo.ui.base.BaseOwoScreen;
 import io.wispforest.owo.ui.base.BaseUIComponent;
 import io.wispforest.owo.ui.component.BoxComponent;
 import io.wispforest.owo.ui.component.LabelComponent;
+import io.wispforest.owo.ui.component.SliderComponent;
+import io.wispforest.owo.ui.component.TextBoxComponent;
 import io.wispforest.owo.ui.component.UIComponents;
 import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.container.UIContainers;
@@ -16,29 +17,35 @@ import org.jetbrains.annotations.NotNull;
 import java.util.function.Consumer;
 
 /**
- * A color picker with an HSV gradient canvas. The user clicks or drags on
- * the gradient to pick an arbitrary RGB color, or picks one of the preset
- * Minecraft colors below, then confirms with "Use This Color".
- *
+ * A full color editor: SV gradient canvas + vertical hue bar on the left,
+ * linked HSV/RGBA sliders with numeric inputs, and a HEX input.
  * The picked color is reported as a hex string like "FF5B8C".
  */
 public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
 
-    private final Consumer<String> onColorSelected; // hex "RRGGBB", null handled as default
+    private final Consumer<String> onColorSelected; // hex "RRGGBB", null = default
     private final Runnable onCancel;
     private final String initialHex;
 
-    private ColorCanvas canvas;
+    // Working color state (all normalized 0..1)
+    private float h = 0f, s = 0f, v = 1f;
+    private boolean updating = false;
+
+    private SvCanvas svCanvas;
+    private HueBar hueBar;
     private BoxComponent previewBox;
     private LabelComponent hexLabel;
-    private String selectedHex;
+
+    private SliderComponent hSlider, sSlider, vSlider, rSlider, gSlider, bSlider;
+    private TextBoxComponent hBox, sBox, vBox, rBox, gBox, bBox, hexBox;
+    private LabelComponent hexValueLabel;
 
     public ColorPickerScreen(String initialHex, Consumer<String> onColorSelected, Runnable onCancel) {
         super(Component.translatable("macrogrid.color.title"));
         this.initialHex = initialHex;
-        this.selectedHex = initialHex;
         this.onColorSelected = onColorSelected;
         this.onCancel = onCancel;
+        if (initialHex != null) applyHex(initialHex);
     }
 
     @Override
@@ -53,7 +60,7 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
             .verticalAlignment(VerticalAlignment.CENTER);
 
         FlowLayout panel = UIContainers.verticalFlow(
-            Sizing.fixed(300),
+            Sizing.fixed(400),
             Sizing.content()
         );
         panel.surface(Surface.flat(0xB0000000)).padding(Insets.of(6));
@@ -65,205 +72,356 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
             ).margins(Insets.bottom(4))
         );
 
-        // The HSV gradient canvas.
-        canvas = new ColorCanvas(initialHex, this::setSelected);
-        canvas
+        // Top row: SV canvas + hue bar + preview swatch.
+        FlowLayout topRow = UIContainers.horizontalFlow(
+            Sizing.fill(100),
+            Sizing.content()
+        );
+        topRow.gap(4).margins(Insets.bottom(4));
+
+        svCanvas = new SvCanvas(arr -> onSvPicked(arr[0], arr[1]));
+        svCanvas
             .horizontalSizing(Sizing.fill(100))
-            .verticalSizing(Sizing.fixed(180))
-            .margins(Insets.bottom(4));
-        panel.child(canvas);
+            .verticalSizing(Sizing.fixed(190));
+        topRow.child(svCanvas);
 
-        // Live preview row: swatch + hex text.
-        FlowLayout previewRow = UIContainers.horizontalFlow(
+        hueBar = new HueBar(this::onHuePicked);
+        hueBar
+            .horizontalSizing(Sizing.fixed(14))
+            .verticalSizing(Sizing.fixed(190));
+        topRow.child(hueBar);
+
+        FlowLayout previewCol = UIContainers.verticalFlow(
+            Sizing.fixed(58),
+            Sizing.content()
+        );
+        previewCol.verticalAlignment(VerticalAlignment.CENTER);
+        previewBox = UIComponents.box(Sizing.fixed(46), Sizing.fixed(46));
+        previewBox.color(Color.ofArgb(rgbInt()));
+        previewCol.child(previewBox);
+        hexValueLabel = UIComponents.label(Component.literal(toHex()).withStyle(ChatFormatting.BOLD));
+        previewCol.child(hexValueLabel.margins(Insets.top(2)));
+        topRow.child(previewCol);
+
+        panel.child(topRow);
+
+        // Slider rows: H S V R G B, each with a numeric box.
+        hSlider = slider(0.0); sSlider = slider(1.0); vSlider = slider(1.0);
+        rSlider = slider(1.0); gSlider = slider(1.0); bSlider = slider(1.0);
+        hBox = numBox(); sBox = numBox(); vBox = numBox();
+        rBox = numBox(); gBox = numBox(); bBox = numBox();
+
+        hSlider.onChanged().subscribe(val -> { if (!updating) { h = (float) val; refresh(); } });
+        sSlider.onChanged().subscribe(val -> { if (!updating) { s = (float) val; refresh(); } });
+        vSlider.onChanged().subscribe(val -> { if (!updating) { v = (float) val; refresh(); } });
+        rSlider.onChanged().subscribe(val -> { if (!updating) { fromRgb((int) (val * 255), r(), g()); refresh(); } });
+        gSlider.onChanged().subscribe(val -> { if (!updating) { fromRgb(r(), (int) (val * 255), b()); refresh(); } });
+        bSlider.onChanged().subscribe(val -> { if (!updating) { fromRgb(r(), g(), (int) (val * 255)); refresh(); } });
+
+        hBox.setResponder(t -> parseIntBox(t, 360, v -> h = v / 360f));
+        sBox.setResponder(t -> parseIntBox(t, 100, v -> s = v / 100f));
+        vBox.setResponder(t -> parseIntBox(t, 100, vv -> v = vv / 100f));
+        rBox.setResponder(t -> parseIntBox(t, 255, v -> fromRgb(v, r(), g())));
+        gBox.setResponder(t -> parseIntBox(t, 255, v -> fromRgb(r(), v, b())));
+        bBox.setResponder(t -> parseIntBox(t, 255, v -> fromRgb(r(), g(), v)));
+
+        panel.child(sliderRow("§cH:", hSlider, hBox));
+        panel.child(sliderRow("§aS:", sSlider, sBox));
+        panel.child(sliderRow("§9V:", vSlider, vBox));
+        panel.child(sliderRow("§4R:", rSlider, rBox));
+        panel.child(sliderRow("§2G:", gSlider, gBox));
+        panel.child(sliderRow("§1B:", bSlider, bBox));
+
+        // HEX input row.
+        FlowLayout hexRow = UIContainers.horizontalFlow(
             Sizing.fill(100),
             Sizing.content()
         );
-        previewRow.gap(4).verticalAlignment(VerticalAlignment.CENTER);
-        previewBox = UIComponents.box(Sizing.fixed(28), Sizing.fixed(14));
-        previewBox.color(Color.ofArgb(parseHex(selectedHex)));
-        previewRow.child(previewBox);
-        hexLabel = UIComponents.label(Component.literal("#" + selectedHex));
-        previewRow.child(hexLabel);
-        panel.child(previewRow.margins(Insets.bottom(6)));
-
-        // Preset Minecraft colors (one row).
-        FlowLayout presetRow = UIContainers.horizontalFlow(
-            Sizing.fill(100),
-            Sizing.content()
+        hexRow.gap(4).verticalAlignment(VerticalAlignment.CENTER).margins(Insets.top(2));
+        hexRow.child(
+            UIComponents.label(Component.literal("HEX:")).horizontalSizing(Sizing.fixed(32))
         );
-        presetRow.gap(2).margins(Insets.bottom(6));
+        hexBox = UIComponents.textBox(Sizing.fill(100));
+        hexBox.setValue(toHex());
+        hexBox.setFilter(s -> s.matches("[0-9a-fA-F]{0,6}"));
+        hexBox.setResponder(t -> {
+            if (updating) return;
+            if (t.length() == 6 && t.matches("[0-9a-fA-F]{6}")) {
+                applyHex(t);
+                refresh();
+            }
+        });
+        hexRow.child(hexBox);
+        panel.child(hexRow);
 
-        String[][] presets = {
-            { "Default", null },
-            { "§cRed", "FF5555" },
-            { "§aGreen", "55FF55" },
-            { "§9Blue", "5555FF" },
-            { "§eYellow", "FFFF55" },
-            { "§5Purple", "AA00AA" },
-            { "§bAqua", "55FFFF" },
-            { "§6Gold", "FFAA00" },
-            { "§7Gray", "AAAAAA" },
-            { "§0Black", "000000" },
-        };
-        for (String[] preset : presets) {
-            final String label = preset[0];
-            final String hex = preset[1];
-            var btn = UIComponents.button(Component.literal(label), b -> {
-                if (hex == null) setSelected(null);
-                else setSelected(hex);
-            });
-            btn.horizontalSizing(Sizing.fill(10));
-            btn.tooltip(Component.literal(hex == null ? "Default color" : "#" + hex));
-            presetRow.child(btn);
-        }
-        panel.child(presetRow);
-
-        // Confirm / cancel row.
+        // Action row.
         FlowLayout actionRow = UIContainers.horizontalFlow(
             Sizing.fill(100),
             Sizing.content()
         );
-        actionRow.gap(4);
+        actionRow.gap(4).margins(Insets.top(6));
+
+        var defaultBtn = UIComponents.button(Component.literal("§7Default"), b ->
+            onColorSelected.accept(null));
+        defaultBtn.horizontalSizing(Sizing.fill(25));
 
         var useBtn = UIComponents.button(
             Component.literal("§a✔  Use This Color"),
-            b -> onColorSelected.accept(selectedHex)
+            b -> onColorSelected.accept(toHex())
         );
-        useBtn.horizontalSizing(Sizing.fill(50));
+        useBtn.horizontalSizing(Sizing.fill(37));
 
         var cancelBtn = UIComponents.button(
             Component.literal("§c✖  Cancel"),
             b -> onCancel.run()
         );
-        cancelBtn.horizontalSizing(Sizing.fill(50));
+        cancelBtn.horizontalSizing(Sizing.fill(37));
 
-        actionRow.child(useBtn).child(cancelBtn);
+        actionRow.child(defaultBtn).child(useBtn).child(cancelBtn);
         panel.child(actionRow);
 
         root.child(panel);
+        refresh();
     }
 
-    private void setSelected(String hex) {
-        selectedHex = hex;
-        if (previewBox != null) previewBox.color(Color.ofArgb(parseHex(hex)));
-        if (hexLabel != null) hexLabel.text(Component.literal(hex == null ? "Default" : "#" + hex));
-        if (canvas != null) canvas.setSelected(hex);
-    }
+    // ---- helpers ----
 
-    private static int parseHex(String hex) {
+    private void parseIntBox(String text, int max, Consumer<Integer> apply) {
+        if (updating) return;
         try {
-            return 0xFF000000 | Integer.parseInt(hex, 16);
-        } catch (Exception e) {
-            return 0xFFFFFFFF;
-        }
+            int val = Integer.parseInt(text.trim());
+            apply.accept(Math.max(0, Math.min(max, val)));
+            refresh();
+        } catch (NumberFormatException ignored) {}
     }
 
-    /** HSV gradient canvas component: hue along X, brightness along Y. */
-    public static class ColorCanvas extends BaseUIComponent {
+    private void onSvPicked(float s, float v) {
+        if (updating) return;
+        this.s = s;
+        this.v = v;
+        refresh();
+    }
 
-        private float hue = 0f;      // 0..1
-        private float brightness = 1f; // 0..1
-        private int selectedRgb = 0xFFFFFFFF;
+    private void onHuePicked(float h) {
+        if (updating) return;
+        this.h = h;
+        refresh();
+    }
 
-        private final Consumer<String> onPick;
+    /** Push the current HSV state into every control. */
+    private void refresh() {
+        updating = true;
+        hSlider.value(h);
+        sSlider.value(s);
+        vSlider.value(v);
+        int[] rgb = hsvToRgb(h, s, v);
+        rSlider.value(rgb[0] / 255f);
+        gSlider.value(rgb[1] / 255f);
+        bSlider.value(rgb[2] / 255f);
+        hBox.setValue(String.valueOf((int) (h * 360)));
+        sBox.setValue(String.valueOf((int) (s * 100)));
+        vBox.setValue(String.valueOf((int) (v * 100)));
+        rBox.setValue(String.valueOf(rgb[0]));
+        gBox.setValue(String.valueOf(rgb[1]));
+        bBox.setValue(String.valueOf(rgb[2]));
+        hexBox.setValue(toHex());
+        previewBox.color(Color.ofArgb(0xFF000000 | rgbInt()));
+        hexValueLabel.text(Component.literal("#" + toHex()).withStyle(ChatFormatting.BOLD));
+        svCanvas.setHue(h);
+        svCanvas.setSelection(s, v);
+        hueBar.setHue(h);
+        updating = false;
+    }
 
-        ColorCanvas(String initialHex, Consumer<String> onPick) {
-            this.onPick = onPick;
-            if (initialHex != null) setSelected(initialHex);
+    private SliderComponent slider(double value) {
+        SliderComponent slider = UIComponents.slider(Sizing.fill(100));
+        slider.value(value);
+        slider.scrollStep(0.01);
+        slider.message(v -> Component.literal(""));
+        return slider;
+    }
+
+    private TextBoxComponent numBox() {
+        TextBoxComponent box = UIComponents.textBox(Sizing.fixed(36));
+        box.setFilter(s -> s.matches("\\d*"));
+        return box;
+    }
+
+    private FlowLayout sliderRow(String label, SliderComponent slider, TextBoxComponent box) {
+        FlowLayout row = UIContainers.horizontalFlow(
+            Sizing.fill(100),
+            Sizing.content()
+        );
+        row.gap(4).verticalAlignment(VerticalAlignment.CENTER);
+        row.child(
+            UIComponents.label(Component.literal(label)).horizontalSizing(Sizing.fixed(20))
+        );
+        row.child(slider.horizontalSizing(Sizing.fill(100)));
+        row.child(box);
+        return row;
+    }
+
+    // ---- color math ----
+
+    private int r() { return hsvToRgb(h, s, v)[0]; }
+    private int g() { return hsvToRgb(h, s, v)[1]; }
+    private int b() { return hsvToRgb(h, s, v)[2]; }
+
+    private int rgbInt() {
+        int[] rgb = hsvToRgb(h, s, v);
+        return (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
+    }
+
+    private String toHex() {
+        return String.format("%06X", rgbInt());
+    }
+
+    private void fromRgb(int r, int g, int b) {
+        float[] hsv = rgbToHsv(
+            Math.max(0, Math.min(255, r)),
+            Math.max(0, Math.min(255, g)),
+            Math.max(0, Math.min(255, b))
+        );
+        h = hsv[0];
+        s = hsv[1];
+        v = hsv[2];
+    }
+
+    private void applyHex(String hex) {
+        try {
+            int rgb = Integer.parseInt(hex, 16);
+            fromRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
+        } catch (Exception ignored) {}
+    }
+
+    static int[] hsvToRgb(float h, float s, float v) {
+        int i = (int) (h * 6);
+        float f = h * 6 - i;
+        float p = v * (1 - s);
+        float q = v * (1 - f * s);
+        float t = v * (1 - (1 - f) * s);
+        float r, g, b;
+        switch (i % 6) {
+            case 0: r = v; g = t; b = p; break;
+            case 1: r = q; g = v; b = p; break;
+            case 2: r = p; g = v; b = t; break;
+            case 3: r = p; g = q; b = v; break;
+            case 4: r = t; g = p; b = v; break;
+            default: r = v; g = p; b = q; break;
         }
+        return new int[] { (int) (r * 255), (int) (g * 255), (int) (b * 255) };
+    }
 
-        void setSelected(String hex) {
-            if (hex == null) return;
-            try {
-                int rgb = Integer.parseInt(hex, 16);
-                float[] hsv = rgbToHsv(rgb);
-                hue = hsv[0];
-                brightness = hsv[2];
-                selectedRgb = rgb;
-            } catch (Exception ignored) {}
-        }
+    static float[] rgbToHsv(int r, int g, int b) {
+        float rf = r / 255f, gf = g / 255f, bf = b / 255f;
+        float max = Math.max(rf, Math.max(gf, bf));
+        float min = Math.min(rf, Math.min(gf, bf));
+        float d = max - min;
+        float h;
+        if (d == 0) h = 0;
+        else if (max == rf) h = ((gf - bf) / d) % 6;
+        else if (max == gf) h = (bf - rf) / d + 2;
+        else h = (rf - gf) / d + 4;
+        h = (h * 60 + 360) % 360 / 360f;
+        float s = max == 0 ? 0 : d / max;
+        return new float[] { h, s, max };
+    }
+
+    /** SV canvas: X = saturation (left 0, right 1), Y = value (top 1, bottom 0), at fixed hue. */
+    public static class SvCanvas extends BaseUIComponent {
+        private float hue = 0f;
+        private float sat = 0f;
+        private float val = 1f;
+        private final Consumer<float[]> onPick; // {sat, val}
+
+        SvCanvas(Consumer<float[]> onPick) { this.onPick = onPick; }
+
+        void setHue(float h) { hue = h; }
+        void setSelection(float s, float v) { sat = s; val = v; }
 
         @Override
         public void draw(OwoUIGraphics ctx, int mouseX, int mouseY, float partialTicks, float delta) {
-            // Horizontal hue gradient, each column a vertical brightness ramp.
-            int segments = 24;
+            int segments = 20;
             for (int i = 0; i < segments; i++) {
-                float h = i / (float) segments;
-                int top = 0xFF000000 | hsvToRgb(h, 1f, 1f);
-                int bottom = 0xFF000000 | hsvToRgb(h, 1f, 0f);
+                float s = i / (float) segments;
+                int top = 0xFF000000 | pack(hsvToRgb(hue, s, 1f));
+                int bottom = 0xFF000000 | pack(hsvToRgb(hue, s, 0f));
                 int x1 = x() + i * width() / segments;
                 int x2 = x() + (i + 1) * width() / segments;
                 ctx.drawGradientRect(x1, y(), x2, y() + height(), top, top, bottom, bottom);
             }
-
-            // Selection marker.
-            int cx = x() + (int) (hue * width());
-            int cy = y() + (int) ((1f - brightness) * height());
+            // selection marker
+            int cx = x() + (int) (sat * width());
+            int cy = y() + (int) ((1f - val) * height());
             ctx.drawCircle(cx, cy, 4, 1.2, Color.WHITE);
             ctx.drawCircle(cx, cy, 4, 0.6, Color.BLACK);
         }
 
         @Override
         public boolean onMouseDown(MouseButtonEvent event, boolean doubled) {
-            if (event.button() == 0) {
-                pick(event.x(), event.y());
-                return true;
-            }
+            if (event.button() == 0) { pick(event.x(), event.y()); return true; }
             return super.onMouseDown(event, doubled);
         }
 
         @Override
         public boolean onMouseDrag(MouseButtonEvent event, double dragX, double dragY) {
-            if (event.button() == 0) {
-                pick(event.x(), event.y());
-                return true;
-            }
+            if (event.button() == 0) { pick(event.x(), event.y()); return true; }
             return super.onMouseDrag(event, dragX, dragY);
         }
 
         private void pick(double mx, double my) {
             if (width() <= 0 || height() <= 0) return;
-            float h = (float) Math.min(1, Math.max(0, (mx - x()) / width()));
-            float v = (float) Math.min(1, Math.max(0, 1 - (my - y()) / height()));
-            hue = h;
-            brightness = v;
-            selectedRgb = 0xFF000000 | hsvToRgb(h, 1f, v);
-            if (onPick != null) onPick.accept(String.format("%06X", selectedRgb & 0xFFFFFF));
+            sat = (float) Math.min(1, Math.max(0, (mx - x()) / width()));
+            val = (float) Math.min(1, Math.max(0, 1 - (my - y()) / height()));
+            if (onPick != null) onPick.accept(new float[] { sat, val });
         }
+    }
 
-        static int hsvToRgb(float h, float s, float v) {
-            int i = (int) (h * 6);
-            float f = h * 6 - i;
-            float p = v * (1 - s);
-            float q = v * (1 - f * s);
-            float t = v * (1 - (1 - f) * s);
-            float r, g, b;
-            switch (i % 6) {
-                case 0: r = v; g = t; b = p; break;
-                case 1: r = q; g = v; b = p; break;
-                case 2: r = p; g = v; b = t; break;
-                case 3: r = p; g = q; b = v; break;
-                case 4: r = t; g = p; b = v; break;
-                default: r = v; g = p; b = q; break;
+    /** Vertical hue bar: top red -> bottom red, hue 0..1. */
+    public static class HueBar extends BaseUIComponent {
+        private float hue = 0f;
+        private final Consumer<Float> onPick;
+
+        HueBar(Consumer<Float> onPick) { this.onPick = onPick; }
+
+        void setHue(float h) { hue = h; }
+
+        @Override
+        public void draw(OwoUIGraphics ctx, int mouseX, int mouseY, float partialTicks, float delta) {
+            int segments = 24;
+            for (int i = 0; i < segments; i++) {
+                float h1 = i / (float) segments;
+                float h2 = (i + 1) / (float) segments;
+                int color = 0xFF000000 | pack(hsvToRgb(h1, 1f, 1f));
+                int y1 = y() + i * height() / segments;
+                int y2 = y() + (i + 1) * height() / segments;
+                ctx.drawGradientRect(x(), y1, x() + width(), y2, color, color, color, color);
             }
-            return ((int) (r * 255) << 16) | ((int) (g * 255) << 8) | (int) (b * 255);
+            // selection marker: horizontal ticks at current hue
+            int cy = y() + (int) (hue * height());
+            ctx.drawRectOutline(x(), cy - 2, x() + width(), cy + 2, 1);
         }
 
-        static float[] rgbToHsv(int rgb) {
-            float r = ((rgb >> 16) & 0xFF) / 255f;
-            float g = ((rgb >> 8) & 0xFF) / 255f;
-            float b = (rgb & 0xFF) / 255f;
-            float max = Math.max(r, Math.max(g, b));
-            float min = Math.min(r, Math.min(g, b));
-            float d = max - min;
-            float h;
-            if (d == 0) h = 0;
-            else if (max == r) h = ((g - b) / d) % 6;
-            else if (max == g) h = (b - r) / d + 2;
-            else h = (r - g) / d + 4;
-            h = (h * 60 + 360) % 360 / 360f;
-            float s = max == 0 ? 0 : d / max;
-            return new float[] { h, s, max };
+        @Override
+        public boolean onMouseDown(MouseButtonEvent event, boolean doubled) {
+            if (event.button() == 0) { pick(event.y()); return true; }
+            return super.onMouseDown(event, doubled);
         }
+
+        @Override
+        public boolean onMouseDrag(MouseButtonEvent event, double dragX, double dragY) {
+            if (event.button() == 0) { pick(event.y()); return true; }
+            return super.onMouseDrag(event, dragX, dragY);
+        }
+
+        private void pick(double my) {
+            if (height() <= 0) return;
+            hue = (float) Math.min(1, Math.max(0, (my - y()) / height()));
+            if (onPick != null) onPick.accept(hue);
+        }
+    }
+
+    static int pack(int[] rgb) {
+        return (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
     }
 }
