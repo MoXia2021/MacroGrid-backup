@@ -1,0 +1,33 @@
+{
+	"schemaVersion": 1,
+	"id": "macrogrid",
+	"version": "${version}",
+	"name": "MacroGrid",
+	"description": "A customizable GUI for command macros.",
+	"authors": [
+		"o0h"
+	],
+	"contact": {
+		"homepage": "https://modrinth.com/mod/macrogrid",
+		"sources": "https://github.com/realo0h/MacroGrid"
+	},
+	"license": "MIT",
+	"icon": "assets/macrogrid/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"client": [
+			"real.o0h.MacroGrid"
+		],
+		"mixins": [
+    		"o0h.mixins.json"
+  		]
+
+	}, 
+
+	"depends": {
+		"fabricloader": ">=0.18.5",
+		"minecraft": "~26.1",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}
