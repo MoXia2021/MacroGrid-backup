@@ -328,10 +328,7 @@ public class ButtonGuiScreen extends BaseOwoScreen<FlowLayout> {
                     btn.getIcon() != null &&
                     btn.getIcon() != ButtonData.ButtonIcon.NONE
                 ) sb.append(btn.getIcon().getSymbol()).append(" ");
-                if (
-                    btn.getColor() != null &&
-                    btn.getColor() != ButtonData.ButtonColor.DEFAULT
-                ) sb.append(btn.getColor().getCode());
+                sb.append(btn.getDisplayCode());
             }
         }
         sb.append(btn.getName());

@@ -27,6 +27,7 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
 
     private ButtonData.ButtonColor currentColor;
     private ButtonData.ButtonIcon currentIcon;
+    private String customColor; // hex "RRGGBB"; null = use the enum color
 
     private TextBoxComponent nameField;
     private ButtonComponent colorButton;
@@ -55,6 +56,7 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
         if (button != null) {
             currentColor = button.getColor();
             currentIcon = button.getIcon();
+            customColor = button.getCustomColor();
             for (ButtonData.CommandEntry cmd : button.getCommands())
                 commandWidgets.add(
                     new CommandWidget(cmd.getCommand(), cmd.getType())
@@ -62,6 +64,7 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
         } else {
             currentColor = ButtonData.ButtonColor.DEFAULT;
             currentIcon = ButtonData.ButtonIcon.NONE;
+            customColor = null;
         }
     }
 
@@ -158,10 +161,10 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
         colorIconRow.gap(4).margins(Insets.bottom(6));
 
         colorButton = UIComponents.button(Component.literal(colorLabel()), b ->
-            cycleColor()
+            openColorPicker()
         );
         colorButton.horizontalSizing(Sizing.fixed(PAIR_BTN));
-        colorButton.tooltip(Component.literal("Click to cycle through colors"));
+        colorButton.tooltip(Component.literal("Click to open the color picker"));
 
         ButtonComponent iconButton = UIComponents.button(
             Component.literal(iconLabel()),
@@ -324,6 +327,9 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
             currentIcon != null && currentIcon != ButtonData.ButtonIcon.NONE
         ) sb.append(currentIcon.getSymbol()).append(" ");
         if (
+            customColor != null && !customColor.isEmpty()
+        ) sb.append(ButtonData.hexCode(customColor));
+        else if (
             currentColor != null &&
             currentColor != ButtonData.ButtonColor.DEFAULT
         ) sb.append(currentColor.getCode());
@@ -332,6 +338,9 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
     }
 
     private String colorLabel() {
+        if (customColor != null && !customColor.isEmpty()) {
+            return "Color · " + ButtonData.hexCode(customColor) + "#" + customColor;
+        }
         if (
             currentColor == ButtonData.ButtonColor.DEFAULT
         ) return "§7Color  ·  Default";
@@ -467,6 +476,25 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
         updatePreview();
     }
 
+    private void openColorPicker() {
+        ButtonData current = buildButtonData();
+        Minecraft.getInstance().setScreen(
+            new ColorPickerScreen(
+                customColor,
+                hex -> {
+                    current.setCustomColor(hex);
+                    Minecraft.getInstance().setScreen(
+                        new EditButtonScreen(current, onSave, isAddMode)
+                    );
+                },
+                () ->
+                    Minecraft.getInstance().setScreen(
+                        new EditButtonScreen(current, onSave, isAddMode)
+                    )
+            )
+        );
+    }
+
     private void openIconPicker() {
         ButtonData current = buildButtonData();
         Minecraft.getInstance().setScreen(
@@ -495,6 +523,7 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
             cmds.add(new ButtonData.CommandEntry(w.getText(), w.getType()));
         ButtonData data = new ButtonData(name, cmds);
         data.setColor(currentColor);
+        data.setCustomColor(customColor);
         data.setIcon(currentIcon);
         return data;
     }
