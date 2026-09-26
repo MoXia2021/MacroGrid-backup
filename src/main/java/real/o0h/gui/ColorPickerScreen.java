@@ -60,14 +60,26 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
             .horizontalAlignment(HorizontalAlignment.CENTER)
             .verticalAlignment(VerticalAlignment.CENTER);
 
-        // Window = 1/4 of the screen, centered.
-        int winW = Math.max(360, this.width / 2);
-        int winH = Math.max(240, this.height / 2);
+        // Window ~1/5 of the screen, centered. All child sizes are fixed so
+        // nothing gets pushed out by fill() siblings.
+        int pad = 8;
+        int winW = Math.max(320, (int) (this.width * 0.42));
+        int winH = Math.max(240, (int) (this.height * 0.5));
+        int titleH = 20;
+        int bodyW = winW - pad * 2;
+        int bodyH = winH - pad * 2 - titleH;
+        int leftW = (int) (bodyW * 0.52);
+        int rightW = bodyW - leftW - 10;
+        int hueBarW = 16;
+        int svH = Math.max(140, (int) (bodyH * 0.6));
+        int svW = leftW - hueBarW - 4;
+        int previewH = 52;
+
         FlowLayout panel = UIContainers.verticalFlow(
             Sizing.fixed(winW),
             Sizing.fixed(winH)
         );
-        panel.surface(Surface.flat(0xC0000000)).padding(Insets.of(8));
+        panel.surface(Surface.flat(0xC0000000)).padding(Insets.of(pad));
 
         panel.child(
             UIComponents.label(
@@ -85,38 +97,38 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
 
         // ---- Left column ----
         FlowLayout left = UIContainers.verticalFlow(
-            Sizing.fill(58),
+            Sizing.fixed(leftW),
             Sizing.fill(100)
         );
         left.gap(4);
 
         FlowLayout svRow = UIContainers.horizontalFlow(
-            Sizing.fill(100),
-            Sizing.fill(100)
+            Sizing.fixed(svW + hueBarW + 4),
+            Sizing.fixed(svH)
         );
         svRow.gap(4);
 
         svCanvas = new SvCanvas(arr -> onSvPicked(arr[0], arr[1]));
         svCanvas
-            .horizontalSizing(Sizing.fill(100))
-            .verticalSizing(Sizing.fill(100));
+            .horizontalSizing(Sizing.fixed(svW))
+            .verticalSizing(Sizing.fixed(svH));
         svRow.child(svCanvas);
 
         hueBar = new HueBar(this::onHuePicked);
         hueBar
-            .horizontalSizing(Sizing.fixed(16))
-            .verticalSizing(Sizing.fill(100));
+            .horizontalSizing(Sizing.fixed(hueBarW))
+            .verticalSizing(Sizing.fixed(svH));
         svRow.child(hueBar);
 
         left.child(svRow);
 
-        previewBox = UIComponents.box(Sizing.fixed(52), Sizing.fixed(52));
+        previewBox = UIComponents.box(Sizing.fixed(previewH), Sizing.fixed(previewH));
         previewBox.color(Color.ofArgb(0xFF000000 | rgbInt()));
         left.child(previewBox);
 
         // ---- Right column ----
         FlowLayout right = UIContainers.verticalFlow(
-            Sizing.fill(40),
+            Sizing.fixed(rightW),
             Sizing.content()
         );
         right.gap(3).verticalAlignment(VerticalAlignment.CENTER);
@@ -371,13 +383,13 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
                 int x2 = x() + (i + 1) * width() / segments;
                 ctx.drawGradientRect(x1, y(), x2, y() + height(), top, top, bottom, bottom);
             }
-            // Cross-hair marker (white with dark shadow).
+            // Cross-hair marker spanning the whole canvas (white 2px + dark shadow).
             int cx = x() + (int) (sat * width());
             int cy = y() + (int) ((1f - val) * height());
-            ctx.drawRectOutline(x(), cy + 1, x() + width(), cy + 2, 1);
-            ctx.drawRectOutline(cx + 1, y(), cx + 2, y() + height(), 1);
-            ctx.drawRectOutline(x(), cy - 1, x() + width(), cy, 1);
-            ctx.drawRectOutline(cx - 1, y(), cx, y() + height(), 1);
+            ctx.drawGradientRect(x(), cy + 3, x() + width(), cy + 4, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000);
+            ctx.drawGradientRect(cx + 3, y(), cx + 4, y() + height(), 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000);
+            ctx.drawGradientRect(x(), cy, x() + width(), cy + 2, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
+            ctx.drawGradientRect(cx, y(), cx + 2, y() + height(), 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
         }
 
         @Override
@@ -419,10 +431,10 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
                 int y2 = y() + (i + 1) * height() / segments;
                 ctx.drawGradientRect(x(), y1, x() + width(), y2, color, color, color, color);
             }
-            // Horizontal tick at current hue (white with dark shadow).
+            // Horizontal tick at current hue (white 2px + dark shadow).
             int cy = y() + (int) (hue * height());
-            ctx.drawRectOutline(x(), cy + 1, x() + width(), cy + 2, 1);
-            ctx.drawRectOutline(x(), cy - 1, x() + width(), cy, 1);
+            ctx.drawGradientRect(x(), cy + 2, x() + width(), cy + 3, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000);
+            ctx.drawGradientRect(x(), cy, x() + width(), cy + 2, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
         }
 
         @Override
@@ -474,10 +486,10 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
                     colors[0], colors[0], colors[0], colors[0]);
             }
             ctx.drawRectOutline(x(), y(), x() + width(), y() + height(), 1);
-            // Handle: white line with dark shadow.
+            // Handle: white 2px bar with dark shadow.
             int hx = x() + (int) (value * (width() - 1));
-            ctx.drawRectOutline(hx - 1, y() - 1, hx + 2, y() + height() + 1, 1);
-            ctx.drawRectOutline(hx - 2, y() - 2, hx + 1, y() + height(), 1);
+            ctx.drawGradientRect(hx + 3, y(), hx + 4, y() + height(), 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000);
+            ctx.drawGradientRect(hx, y(), hx + 2, y() + height(), 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
         }
 
         @Override
