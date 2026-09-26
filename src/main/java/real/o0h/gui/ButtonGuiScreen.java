@@ -128,7 +128,7 @@ tabBarLayout.margins(Insets.bottom(6));
         // borderless field with light text.
         FlowLayout searchRow = UIContainers.horizontalFlow(
             Sizing.fill(100),
-            Sizing.fixed(16)
+            Sizing.fixed(18)
         );
         searchRow.surface(UITheme.inputStrip());
         searchRow
@@ -143,9 +143,10 @@ tabBarLayout.margins(Insets.bottom(6));
             searchBox.setSuggestion(s.isEmpty() ? "Search..." : "");
             rebuildGrid();
         });
-        FlowLayout clearBtn = makeCard(
-            Component.literal("✕"), UITheme.COL_ACCENT_DIM, false,
-            18, 16, () -> searchBox.setValue(""), null
+        FlowLayout clearBtn = makePill(
+            Component.literal(UITheme.fmt(UITheme.COL_TEXT_DIM) + "✕"),
+            UITheme.COL_TEXT_DIM, 0x18FFFFFF, false,
+            18, () -> searchBox.setValue("")
         );
         searchRow
             .child(searchBox)
@@ -313,12 +314,12 @@ tabBarLayout.margins(Insets.bottom(6));
             );
             editRow.surface(UITheme.inputStrip());
             editRow.verticalAlignment(VerticalAlignment.CENTER);
-            renameField = UIComponents.textBox(Sizing.fill(100));
+            renameField = UIComponents.textBox(Sizing.fill(72));
             renameField.setBordered(false);
             renameField.setTextColor(UITheme.COL_TEXT);
             renameField.setMaxLength(24);
             renameField.setValue(current);
-            renameField.setSuggestion("Profile name");
+            renameField.setSuggestion("");
             renameField.onChanged().subscribe(s ->
                 renameField.setSuggestion(s.isEmpty() ? "Profile name" : "")
             );
