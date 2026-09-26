@@ -157,12 +157,7 @@ public class ButtonManager {
             if (root.has("profiles")) {
                 JsonObject profilesJson = root.getAsJsonObject("profiles");
                 for (String key : profilesJson.keySet()) {
-                    List<ButtonData> list = new ArrayList<>();
-                    JsonArray arr = profilesJson.getAsJsonArray(key);
-                    for (int i = 0; i < arr.size(); i++) {
-                        list.add(ButtonData.fromJson(arr.get(i).getAsJsonObject()));
-                    }
-                    profiles.put(key, list);
+                    profiles.put(key, readButtons(profilesJson.getAsJsonArray(key)));
                 }
                 if (profiles.isEmpty()) profiles.put(DEFAULT_PROFILE, new ArrayList<>());
 
@@ -172,12 +167,7 @@ public class ButtonManager {
                         : profiles.keySet().iterator().next();
 
             } else if (root.has("buttons")) {
-                List<ButtonData> list = new ArrayList<>();
-                JsonArray arr = root.getAsJsonArray("buttons");
-                for (int i = 0; i < arr.size(); i++) {
-                    list.add(ButtonData.fromJson(arr.get(i).getAsJsonObject()));
-                }
-                profiles.put(DEFAULT_PROFILE, list);
+                profiles.put(DEFAULT_PROFILE, readButtons(root.getAsJsonArray("buttons")));
                 currentProfile = DEFAULT_PROFILE;
                 MacroGrid.LOGGER.info("Migrated old single-profile config into a '{}' profile", DEFAULT_PROFILE);
                 save();
@@ -191,5 +181,14 @@ public class ButtonManager {
             MacroGrid.LOGGER.error("Failed to load buttons config", e);
             profiles.put(DEFAULT_PROFILE, new ArrayList<>());
         }
+    }
+
+    /** Parse a JSON array of button objects into a mutable list. */
+    private static List<ButtonData> readButtons(JsonArray arr) {
+        List<ButtonData> list = new ArrayList<>();
+        for (int i = 0; i < arr.size(); i++) {
+            list.add(ButtonData.fromJson(arr.get(i).getAsJsonObject()));
+        }
+        return list;
     }
 }

@@ -1,25 +1,20 @@
 package real.o0h.gui;
 
-import io.wispforest.owo.ui.base.BaseOwoScreen;
-import io.wispforest.owo.ui.component.ButtonComponent;
 import io.wispforest.owo.ui.component.LabelComponent;
 import io.wispforest.owo.ui.component.TextBoxComponent;
 import io.wispforest.owo.ui.component.UIComponents;
 import io.wispforest.owo.ui.container.FlowLayout;
-import io.wispforest.owo.ui.container.ScrollContainer;
 import io.wispforest.owo.ui.container.UIContainers;
 import io.wispforest.owo.ui.core.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import org.jetbrains.annotations.NotNull;
 import real.o0h.config.ButtonData;
 
-public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
+public class EditButtonScreen extends MacroGridScreen {
 
     private final ButtonData existingButton;
     private final Consumer<ButtonData> onSave;
@@ -107,21 +102,10 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
     }
 
     @Override
-    protected @NotNull OwoUIAdapter<FlowLayout> createAdapter() {
-        return OwoUIAdapter.create(this, UIContainers::verticalFlow);
-    }
-
-    @Override
     protected void build(FlowLayout root) {
-        root.surface(Surface.flat(UITheme.COL_DIM))
-            .horizontalAlignment(HorizontalAlignment.CENTER)
-            .verticalAlignment(VerticalAlignment.CENTER);
+        configureRoot(root);
 
-        FlowLayout panel = UIContainers.verticalFlow(
-            Sizing.fixed(320),
-            Sizing.content()
-        );
-        panel.surface(UITheme.panel()).padding(Insets.of(5));
+        FlowLayout panel = createPanel(320, 5);
 
         FlowLayout titleWrap = UIContainers.horizontalFlow(
             Sizing.fill(100),
@@ -138,7 +122,7 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
         titleWrap.margins(Insets.bottom(4));
         panel.child(titleWrap);
 
-        FlowLayout nameCard = card();
+        FlowLayout nameCard = UiFactory.card();
 
         // 3.4-style name field: dark strip + top hairline, borderless text.
         FlowLayout nameStrip = UIContainers.horizontalFlow(
@@ -163,7 +147,7 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
         nameCard.child(nameStrip);
         panel.child(nameCard);
 
-        FlowLayout appearCard = card();
+        FlowLayout appearCard = UiFactory.card();
 
         FlowLayout colorIconRow = UIContainers.horizontalFlow(
             Sizing.fill(100),
@@ -171,13 +155,13 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
         );
         colorIconRow.gap(4).margins(Insets.bottom(3));
 
-        FlowLayout colorButton = clickableCard(
+        FlowLayout colorButton = UiFactory.clickableCard(
             Component.literal(colorLabel()), UITheme.COL_ACCENT_DIM, PAIR_BTN,
             () -> openColorPicker()
         );
         colorButton.tooltip(Component.literal("Click to pick a color"));
 
-        FlowLayout iconButton = clickableCard(
+        FlowLayout iconButton = UiFactory.clickableCard(
             Component.literal(iconLabel()), UITheme.COL_ACCENT_DIM, PAIR_BTN,
             () -> openIconPicker()
         );
@@ -206,21 +190,15 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
 
         panel.child(appearCard);
 
-        FlowLayout actionsCard = card();
-        actionsCard.child(cardHeader("Commands"));
+        FlowLayout actionsCard = UiFactory.card();
+        actionsCard.child(UiFactory.cardHeader("Commands"));
 
         commandListLayout = UIContainers.verticalFlow(
             Sizing.fill(100),
             Sizing.content()
         );
         // Compact command list area: fits ~3 rows on screen, scrollbar visible.
-        var scroll = UIContainers.verticalScroll(
-            Sizing.fill(100),
-            Sizing.fixed(66),
-            commandListLayout
-        );
-        scroll.scrollbar(ScrollContainer.Scrollbar.vanillaFlat());
-        scroll.scrollbarThiccness(5);
+        var scroll = UiFactory.scrollable(commandListLayout, 66);
         scroll.margins(Insets.bottom(3));
         actionsCard.child(scroll);
 
@@ -230,7 +208,7 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
         );
         addCmdRow.gap(4);
 
-        FlowLayout addCmdBtn = clickablePill(
+        FlowLayout addCmdBtn = UiFactory.clickablePill(
             Component.literal(UITheme.fmt(UITheme.COL_CMD) + "+ Command"),
             UITheme.COL_CMD, UITheme.COL_CMD_DIM, false, PAIR_BTN, () -> {
                 commandWidgets.add(
@@ -244,7 +222,7 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
             Component.literal("Add a slash command  (e.g. /tp, /gamemode)")
         );
 
-        FlowLayout addMsgBtn = clickablePill(
+        FlowLayout addMsgBtn = UiFactory.clickablePill(
             Component.literal(UITheme.fmt(UITheme.COL_MSG) + "+ Message"),
             UITheme.COL_MSG, UITheme.COL_MSG_DIM, false, PAIR_BTN, () -> {
                 commandWidgets.add(
@@ -268,13 +246,13 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
         );
         saveRow.gap(4);
 
-        FlowLayout saveBtn = clickablePill(
+        FlowLayout saveBtn = UiFactory.clickablePill(
             Component.literal(UITheme.fmt(UITheme.COL_ACCENT) + "✔  Save"),
             UITheme.COL_ACCENT, UITheme.COL_ACCENT_DIM, true, SAVE_BTN,
             this::saveAndClose
         );
 
-        FlowLayout cancelBtn = clickablePill(
+        FlowLayout cancelBtn = UiFactory.clickablePill(
             Component.literal(UITheme.fmt(UITheme.COL_DANGER) + "✖  Cancel"),
             UITheme.COL_DANGER, UITheme.COL_DANGER_DIM, false, SAVE_BTN,
             this::onClose
@@ -285,80 +263,9 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
 
         // Panel is centered by the root layout itself; no outer scroll wrapper,
         // so the window stays fixed in the middle of the screen.
-        // ---- Scrollable wrapper (kept commented out for reference) ----
-        // var mainScroll = new DragScrollContainer<>(
-        //     ScrollContainer.ScrollDirection.VERTICAL,
-        //     Sizing.fixed(320),
-        //     Sizing.fill(100),
-        //     panel
-        // );
-        // root.child(mainScroll);
         root.child(panel);
         rebuildCommandList();
         updatePreview();
-    }
-
-    private static FlowLayout card() {
-        FlowLayout card = UIContainers.verticalFlow(
-            Sizing.fill(100),
-            Sizing.content()
-        );
-        card.surface(UITheme.subCard())
-            .padding(Insets.of(4))
-            .margins(Insets.bottom(4));
-        return card;
-    }
-
-    private static LabelComponent cardHeader(String text) {
-        LabelComponent label = UIComponents.label(
-            Component.literal(text)
-        );
-        label.color(Color.ofArgb(UITheme.COL_TEXT_DIM)).margins(Insets.bottom(2));
-        return label;
-    }
-
-    /**
-     * Card-style clickable element (FlowLayout + label), because owo leaf
-     * buttons cannot take custom surfaces. Left-click triggers onClick.
-     */
-    private FlowLayout clickableCard(
-        Component text, int accent, int width, Runnable onClick
-    ) {
-        FlowLayout card = UIContainers.horizontalFlow(
-            Sizing.fixed(width), Sizing.fixed(18)
-        );
-        card.surface(UITheme.card(accent));
-        card.horizontalAlignment(HorizontalAlignment.CENTER);
-        card.verticalAlignment(VerticalAlignment.CENTER);
-        LabelComponent lbl = UIComponents.label(text);
-        lbl.shadow(false);
-        card.child(lbl);
-        card.mouseDown().subscribe((click, doubled) -> {
-            if (click.button() == 0) { onClick.run(); return true; }
-            return false;
-        });
-        return card;
-    }
-
-    /** Pill-style clickable element (FlowLayout + label) for the save row. */
-    private FlowLayout clickablePill(
-        Component text, int accent, int accentDim, boolean active,
-        int width, Runnable onClick
-    ) {
-        FlowLayout pill = UIContainers.horizontalFlow(
-            Sizing.fixed(width), Sizing.fixed(18)
-        );
-        pill.surface(UITheme.pill(accent, accentDim, active));
-        pill.horizontalAlignment(HorizontalAlignment.CENTER);
-        pill.verticalAlignment(VerticalAlignment.CENTER);
-        LabelComponent lbl = UIComponents.label(text);
-        lbl.shadow(false);
-        pill.child(lbl);
-        pill.mouseDown().subscribe((click, doubled) -> {
-            if (click.button() == 0) { onClick.run(); return true; }
-            return false;
-        });
-        return pill;
     }
 
     private void updatePreview() {
@@ -436,7 +343,7 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
             );
             row.gap(2).verticalAlignment(VerticalAlignment.CENTER);
 
-            FlowLayout typeBtn = clickablePill(
+            FlowLayout typeBtn = UiFactory.clickablePill(
                 Component.literal(UITheme.fmt(accent) + (isCmd ? "CMD" : "MSG")),
                 accent, accentDim, false, 34, () -> {
                     cw.type = isCmd
@@ -459,7 +366,7 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
 
             TextBoxComponent field = cw.createField(FIELD_W);
 
-            FlowLayout upBtn = clickablePill(
+            FlowLayout upBtn = UiFactory.clickablePill(
                 Component.literal("↑"),
                 UITheme.COL_TEXT_DIM, 0x18FFFFFF, false, 14, () -> {
                     if (idx > 0) {
@@ -472,7 +379,7 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
                 }
             );
 
-            FlowLayout downBtn = clickablePill(
+            FlowLayout downBtn = UiFactory.clickablePill(
                 Component.literal("↓"),
                 UITheme.COL_TEXT_DIM, 0x18FFFFFF, false, 14, () -> {
                     if (idx < commandWidgets.size() - 1) {
@@ -485,7 +392,7 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
                 }
             );
 
-            FlowLayout delBtn = clickablePill(
+            FlowLayout delBtn = UiFactory.clickablePill(
                 Component.literal("✕"),
                 UITheme.COL_DANGER, 0x18FFFFFF, false, 16, () -> {
                     commandWidgets.remove(idx);
@@ -504,31 +411,12 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
         }
     }
 
-    // No longer used (color button now opens the picker); kept for reference.
-    // private void cycleColor() {
-    //     ButtonData.ButtonColor[] colors = ButtonData.ButtonColor.values();
-    //     int cur = Arrays.asList(colors).indexOf(currentColor);
-    //     currentColor = colors[(cur + 1) % colors.length];
-    //     if (colorButton != null) colorButton.setMessage(
-    //         Component.literal(colorLabel())
-    //     );
-    //     updatePreview();
-    // }
-
     private void openColorPicker() {
         ButtonData current = buildButtonData();
         Minecraft.getInstance().setScreen(
             new ColorSelectionScreen(
-                color -> {
-                    current.setColor(color);
-                    Minecraft.getInstance().setScreen(
-                        new EditButtonScreen(current, onSave, isAddMode)
-                    );
-                },
-                () ->
-                    Minecraft.getInstance().setScreen(
-                        new EditButtonScreen(current, onSave, isAddMode)
-                    )
+                color -> { current.setColor(color); reopenEditor(current); },
+                () -> reopenEditor(current)
             )
         );
     }
@@ -537,17 +425,16 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
         ButtonData current = buildButtonData();
         Minecraft.getInstance().setScreen(
             new IconSelectionScreen(
-                icon -> {
-                    current.setIcon(icon);
-                    Minecraft.getInstance().setScreen(
-                        new EditButtonScreen(current, onSave, isAddMode)
-                    );
-                },
-                () ->
-                    Minecraft.getInstance().setScreen(
-                        new EditButtonScreen(current, onSave, isAddMode)
-                    )
+                icon -> { current.setIcon(icon); reopenEditor(current); },
+                () -> reopenEditor(current)
             )
+        );
+    }
+
+    /** Reopen the editor with the (possibly updated) working copy. */
+    private void reopenEditor(ButtonData current) {
+        Minecraft.getInstance().setScreen(
+            new EditButtonScreen(current, onSave, isAddMode)
         );
     }
 

@@ -1,7 +1,5 @@
 package real.o0h.gui;
 
-import io.wispforest.owo.ui.core.OwoUIGraphics;
-import io.wispforest.owo.ui.core.ParentUIComponent;
 import io.wispforest.owo.ui.core.Surface;
 
 /**
@@ -127,10 +125,5 @@ public final class UITheme {
             ctx.fill(comp.x(), comp.y(),
                     comp.x() + comp.width(), comp.y() + 1, COL_PANEL_BORDER);
         };
-    }
-
-    /** Static helper to draw a surface on a component (used by draw overrides). */
-    public static void draw(Surface surface, OwoUIGraphics ctx, ParentUIComponent comp) {
-        surface.draw(ctx, comp);
     }
 }

@@ -1,114 +1,51 @@
 package real.o0h.gui;
 
-import real.o0h.config.ButtonData;
-import io.wispforest.owo.ui.base.BaseOwoScreen;
-import io.wispforest.owo.ui.component.LabelComponent;
-import io.wispforest.owo.ui.component.UIComponents;
-import io.wispforest.owo.ui.container.FlowLayout;
-import io.wispforest.owo.ui.container.ScrollContainer;
-import io.wispforest.owo.ui.container.UIContainers;
-import io.wispforest.owo.ui.core.*;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
-import org.jetbrains.annotations.NotNull;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Consumer;
+import real.o0h.config.ButtonData;
 
-public class IconSelectionScreen extends BaseOwoScreen<FlowLayout> {
+/**
+ * Grid picker for the icon set (sword, heart, arrows, numbers, ...).
+ */
+public class IconSelectionScreen
+    extends AbstractGridPickerScreen<ButtonData.ButtonIcon> {
 
-    private final Consumer<ButtonData.ButtonIcon> onIconSelected;
-    private final Runnable onCancel;
-
-    private static final int ICONS_PER_ROW = 4;
-
-    public IconSelectionScreen(Consumer<ButtonData.ButtonIcon> onIconSelected, Runnable onCancel) {
-        this.onIconSelected = onIconSelected;
-        this.onCancel       = onCancel;
+    public IconSelectionScreen(
+        Consumer<ButtonData.ButtonIcon> onSelected, Runnable onCancel
+    ) {
+        super(onSelected, onCancel);
     }
 
     @Override
-    protected @NotNull OwoUIAdapter<FlowLayout> createAdapter() {
-        return OwoUIAdapter.create(this, UIContainers::verticalFlow);
+    protected String title() {
+        return "Choose an Icon";
     }
 
     @Override
-    protected void build(FlowLayout root) {
-        root.surface(Surface.flat(UITheme.COL_DIM))
-                .horizontalAlignment(HorizontalAlignment.CENTER)
-                .verticalAlignment(VerticalAlignment.CENTER);
+    protected List<ButtonData.ButtonIcon> values() {
+        return Arrays.asList(ButtonData.ButtonIcon.values());
+    }
 
-        FlowLayout panel = UIContainers.verticalFlow(Sizing.fixed(300), Sizing.content());
-        panel.surface(UITheme.panel()).padding(Insets.of(6));
+    @Override
+    protected int panelWidth() {
+        return 300;
+    }
 
-        panel.child(UIComponents.label(
-                        Component.literal("Choose an Icon")
-                                .withStyle(ChatFormatting.BOLD))
-                .color(Color.ofArgb(UITheme.COL_TEXT))
-                .margins(Insets.bottom(4)));
+    @Override
+    protected int gridHeight() {
+        return 180;
+    }
 
-        FlowLayout iconGrid = UIContainers.verticalFlow(Sizing.fill(100), Sizing.content());
+    @Override
+    protected String labelFor(ButtonData.ButtonIcon icon) {
+        return icon == ButtonData.ButtonIcon.NONE
+            ? "None"
+            : icon.getSymbol() + " " + icon.getName();
+    }
 
-        FlowLayout row = null;
-        int col = 0;
-
-        for (ButtonData.ButtonIcon icon : ButtonData.ButtonIcon.values()) {
-            if (col == 0) {
-                row = UIContainers.horizontalFlow(Sizing.fill(100), Sizing.content());
-                row.gap(2).margins(Insets.bottom(2));
-            }
-
-            String label = (icon == ButtonData.ButtonIcon.NONE)
-                    ? "None"
-                    : icon.getSymbol() + " " + icon.getName();
-
-            final ButtonData.ButtonIcon captured = icon;
-            FlowLayout cell = UIContainers.horizontalFlow(
-                Sizing.fill(25), Sizing.fixed(18)
-            );
-            cell.surface(UITheme.card(UITheme.COL_ACCENT_DIM));
-            cell.horizontalAlignment(HorizontalAlignment.CENTER);
-            cell.verticalAlignment(VerticalAlignment.CENTER);
-            LabelComponent lbl = UIComponents.label(Component.literal(label));
-            lbl.shadow(false);
-            cell.child(lbl);
-            cell.tooltip(Component.literal(icon.getName()));
-            cell.mouseDown().subscribe((click, doubled) -> {
-                if (click.button() == 0) { onIconSelected.accept(captured); return true; }
-                return false;
-            });
-
-            row.child(cell);
-            col++;
-
-            if (col >= ICONS_PER_ROW) {
-                iconGrid.child(row);
-                col = 0;
-                row = null;
-            }
-        }
-        if (col > 0 && row != null) iconGrid.child(row);
-
-        var scroll = UIContainers.verticalScroll(Sizing.fill(100), Sizing.fixed(180), iconGrid);
-        scroll
-            .scrollbar(ScrollContainer.Scrollbar.vanillaFlat())
-            .scrollbarThiccness(5);
-        scroll.margins(Insets.bottom(4));
-        panel.child(scroll);
-
-        FlowLayout cancelBtn = UIContainers.horizontalFlow(
-            Sizing.fill(100), Sizing.fixed(18)
-        );
-        cancelBtn.surface(UITheme.pill(UITheme.COL_DANGER, UITheme.COL_DANGER_DIM, false));
-        cancelBtn.horizontalAlignment(HorizontalAlignment.CENTER);
-        cancelBtn.verticalAlignment(VerticalAlignment.CENTER);
-        LabelComponent cancelLbl = UIComponents.label(Component.literal("Cancel"));
-        cancelLbl.shadow(false);
-        cancelBtn.child(cancelLbl);
-        cancelBtn.mouseDown().subscribe((click, doubled) -> {
-            if (click.button() == 0) { onCancel.run(); return true; }
-            return false;
-        });
-        panel.child(cancelBtn);
-
-        root.child(panel);
+    @Override
+    protected String tooltipFor(ButtonData.ButtonIcon icon) {
+        return icon.getName();
     }
 }

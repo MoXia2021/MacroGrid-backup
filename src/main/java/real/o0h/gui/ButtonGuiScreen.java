@@ -1,7 +1,5 @@
 package real.o0h.gui;
 
-import io.wispforest.owo.ui.base.BaseOwoScreen;
-import io.wispforest.owo.ui.component.ButtonComponent;
 import io.wispforest.owo.ui.component.LabelComponent;
 import io.wispforest.owo.ui.component.TextBoxComponent;
 import io.wispforest.owo.ui.component.UIComponents;
@@ -13,11 +11,10 @@ import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import org.jetbrains.annotations.NotNull;
 import real.o0h.config.ButtonData;
 import real.o0h.config.ButtonManager;
 
-public class ButtonGuiScreen extends BaseOwoScreen<FlowLayout> {
+public class ButtonGuiScreen extends MacroGridScreen {
 
     private enum Mode {
         NONE,
@@ -76,24 +73,13 @@ public class ButtonGuiScreen extends BaseOwoScreen<FlowLayout> {
     }
 
     @Override
-    protected @NotNull OwoUIAdapter<FlowLayout> createAdapter() {
-        return OwoUIAdapter.create(this, UIContainers::verticalFlow);
-    }
-
-    @Override
     protected void build(FlowLayout root) {
-        root.surface(Surface.flat(UITheme.COL_DIM))
-            .horizontalAlignment(HorizontalAlignment.CENTER)
-            .verticalAlignment(VerticalAlignment.CENTER);
+        configureRoot(root);
 
         // Panel height is content-sized; the grid area height is computed
         // from the window height so the action bar below stays pinned near
         // the bottom, and only the middle grid area scrolls.
-        FlowLayout panel = UIContainers.verticalFlow(
-            Sizing.fixed(340),
-            Sizing.content()
-        );
-        panel.surface(UITheme.panel()).padding(Insets.of(8));
+        FlowLayout panel = createPanel(340, 8);
 
         FlowLayout titleRow = UIContainers.horizontalFlow(
             Sizing.fill(100),
@@ -143,7 +129,7 @@ tabBarLayout.margins(Insets.bottom(6));
             searchBox.setSuggestion(s.isEmpty() ? "Search..." : "");
             rebuildGrid();
         });
-        FlowLayout clearBtn = makePill(
+        FlowLayout clearBtn = UiFactory.clickablePill(
             Component.literal(UITheme.fmt(UITheme.COL_TEXT_DIM) + "✕"),
             UITheme.COL_TEXT_DIM, 0x18FFFFFF, false,
             18, () -> searchBox.setValue("")
@@ -161,15 +147,6 @@ tabBarLayout.margins(Insets.bottom(6));
         // Keep the button rows inside the grid area: reserve space on the
         // right so the scrollbar does not sit flush against the buttons.
         buttonGridLayout.margins(Insets.right(10));
-
-        // ---- Old inner fixed-height scroll (kept commented out) ----
-        // var scroll = UIContainers.verticalScroll(
-        //     Sizing.fill(100),
-        //     Sizing.fixed(160),
-        //     buttonGridLayout
-        // );
-        // scroll.margins(Insets.bottom(6));
-        // panel.child(scroll);
 
         // The middle grid area is the only scrollable part of the screen.
         // Its height is computed from the window height (minus the fixed
@@ -201,13 +178,13 @@ tabBarLayout.margins(Insets.bottom(6));
         // Pill-style toolbar (3.4 look): translucent fill, accent text,
         // accent top line + tinted fill while active. Built from FlowLayout
         // containers because owo leaf buttons cannot take custom surfaces.
-        FlowLayout addBtn = makePill(
+        FlowLayout addBtn = UiFactory.clickablePill(
             Component.literal(UITheme.fmt(UITheme.COL_ACCENT) + "+ Add"),
             UITheme.COL_ACCENT, UITheme.COL_ACCENT_DIM, false,
             130, this::openAddScreen
         );
 
-        editModeBtn = makePill(
+        editModeBtn = UiFactory.clickablePill(
             Component.literal(UITheme.fmt(UITheme.COL_WARN) + "✎ Edit"),
             UITheme.COL_WARN, UITheme.COL_WARN_DIM, false,
             62, () -> setMode(Mode.EDIT)
@@ -217,7 +194,7 @@ tabBarLayout.margins(Insets.bottom(6));
             Component.literal("Edit mode: click a button to edit it")
         );
 
-        moveModeBtn = makePill(
+        moveModeBtn = UiFactory.clickablePill(
             Component.literal(UITheme.fmt(UITheme.COL_MOVE) + "⇄ Move"),
             UITheme.COL_MOVE, UITheme.COL_MOVE_DIM, false,
             62, () -> setMode(Mode.MOVE)
@@ -229,7 +206,7 @@ tabBarLayout.margins(Insets.bottom(6));
             )
         );
 
-        deleteModeBtn = makePill(
+        deleteModeBtn = UiFactory.clickablePill(
             Component.literal(UITheme.fmt(UITheme.COL_DANGER) + "✖ Del"),
             UITheme.COL_DANGER, UITheme.COL_DANGER_DIM, false,
             62, () -> setMode(Mode.DELETE)
@@ -246,19 +223,6 @@ tabBarLayout.margins(Insets.bottom(6));
             .child(moveModeBtn)
             .child(deleteModeBtn);
         panel.child(bar);
-
-        // ---- Old whole-panel scroll (kept commented out for reference) ----
-        // var mainScroll = new DragScrollContainer<>(
-        //     ScrollContainer.ScrollDirection.VERTICAL,
-        //     Sizing.fixed(340),
-        //     Sizing.fill(100),
-        //     panel
-        // );
-        // mainScroll
-        //     .scrollbar(ScrollContainer.Scrollbar.vanillaFlat())
-        //     .scrollbarThiccness(5);
-        // root.child(mainScroll);
-
         root.child(panel);
         rebuildGrid();
     }
@@ -327,13 +291,13 @@ tabBarLayout.margins(Insets.bottom(6));
                 renameField.setSuggestion(s.isEmpty() ? "Profile name" : "")
             );
             editRow.child(renameField);
-            FlowLayout okBtn = makePill(
+            FlowLayout okBtn = UiFactory.clickablePill(
                 Component.literal(UITheme.fmt(UITheme.COL_ACCENT) + "✓"),
                 UITheme.COL_ACCENT, UITheme.COL_ACCENT_DIM, false,
                 18, this::commitRename
             );
             okBtn.tooltip(Component.literal("Confirm rename"));
-            FlowLayout cancelBtn = makePill(
+            FlowLayout cancelBtn = UiFactory.clickablePill(
                 Component.literal(UITheme.fmt(UITheme.COL_DANGER) + "✕"),
                 UITheme.COL_DANGER, UITheme.COL_DANGER_DIM, false,
                 18, () -> { renamingProfile = false; rebuildTabs(); }
@@ -379,7 +343,7 @@ tabBarLayout.margins(Insets.bottom(6));
 
             if (active) {
                 // Rename icon: edit the current profile's name.
-                FlowLayout renameIcon = makePill(
+                FlowLayout renameIcon = UiFactory.clickablePill(
                     Component.literal("✎"),
                     UITheme.COL_TEXT_DIM, 0x18FFFFFF, false,
                     14, () -> { renamingProfile = true; rebuildTabs(); }
@@ -389,7 +353,7 @@ tabBarLayout.margins(Insets.bottom(6));
 
                 // Delete icon, only when more than one profile exists.
                 if (names.size() > 1) {
-                    FlowLayout delIcon = makePill(
+                    FlowLayout delIcon = UiFactory.clickablePill(
                         Component.literal(
                             pendingDeleteProfile
                                 ? UITheme.fmt(UITheme.COL_DANGER) + "✕"
@@ -420,7 +384,7 @@ tabBarLayout.margins(Insets.bottom(6));
         }
 
         // Create-new-profile icon at the end of the bar.
-        FlowLayout addIcon = makePill(
+        FlowLayout addIcon = UiFactory.clickablePill(
             Component.literal(UITheme.fmt(UITheme.COL_ACCENT) + "+"),
             UITheme.COL_ACCENT, UITheme.COL_ACCENT_DIM, false,
             14, () -> {
@@ -496,12 +460,13 @@ tabBarLayout.margins(Insets.bottom(6));
                 );
                 row.gap(2).margins(Insets.bottom(2));
             }
-            FlowLayout btn = makeCard(
+            FlowLayout btn = UiFactory.clickableCard(
                 Component.literal(makeLabel(button)),
                 cardAccent(button),
+                33, 22,
                 (mode == Mode.DELETE && pendingDelete == button)
                     || (mode == Mode.MOVE && moveSource == button),
-                33, 22, () -> handleClick(button), makeTooltip(button)
+                () -> handleClick(button), makeTooltip(button)
             );
             row.child(btn);
             col++;
@@ -529,48 +494,6 @@ tabBarLayout.margins(Insets.bottom(6));
      * because owo leaf buttons cannot take custom surfaces. Left-click
      * triggers onClick; optional tooltip lines.
      */
-    private FlowLayout makeCard(
-        Component text, int accent, boolean emphasized,
-        int widthPct, int height, Runnable onClick, List<Component> tooltip
-    ) {
-        FlowLayout card = UIContainers.horizontalFlow(
-            Sizing.fill(widthPct), Sizing.fixed(height)
-        );
-        card.surface(UITheme.card(accent, emphasized));
-        card.horizontalAlignment(HorizontalAlignment.CENTER);
-        card.verticalAlignment(VerticalAlignment.CENTER);
-        LabelComponent lbl = UIComponents.label(text);
-        lbl.shadow(false);
-        card.child(lbl);
-        card.mouseDown().subscribe((click, doubled) -> {
-            if (click.button() == 0) { onClick.run(); return true; }
-            return false;
-        });
-        if (tooltip != null) card.tooltip(tooltip);
-        return card;
-    }
-
-    /** Pill-style clickable element for the toolbar (see makeCard). */
-    private FlowLayout makePill(
-        Component text, int accent, int accentDim, boolean active,
-        int width, Runnable onClick
-    ) {
-        FlowLayout pill = UIContainers.horizontalFlow(
-            Sizing.fixed(width), Sizing.fixed(18)
-        );
-        pill.surface(UITheme.pill(accent, accentDim, active));
-        pill.horizontalAlignment(HorizontalAlignment.CENTER);
-        pill.verticalAlignment(VerticalAlignment.CENTER);
-        LabelComponent lbl = UIComponents.label(text);
-        lbl.shadow(false);
-        pill.child(lbl);
-        pill.mouseDown().subscribe((click, doubled) -> {
-            if (click.button() == 0) { onClick.run(); return true; }
-            return false;
-        });
-        return pill;
-    }
-
     private String makeLabel(ButtonData btn) {
         StringBuilder sb = new StringBuilder();
         switch (mode) {
