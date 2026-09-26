@@ -10,14 +10,12 @@ public class ButtonData {
     private List<CommandEntry> commands;
     private ButtonColor color;
     private ButtonIcon icon;
-    private String customColor; // e.g. "FF5B8C"; null = use the enum color
 
     public ButtonData(String name) {
         this.name = name;
         this.commands = new ArrayList<>();
         this.color = ButtonColor.DEFAULT;
         this.icon = ButtonIcon.NONE;
-        this.customColor = null;
     }
 
     public ButtonData(String name, List<CommandEntry> commands) {
@@ -25,37 +23,20 @@ public class ButtonData {
         this.commands = new ArrayList<>(commands);
         this.color = ButtonColor.DEFAULT;
         this.icon = ButtonIcon.NONE;
-        this.customColor = null;
     }
 
     public String getName() { return name; }
     public ButtonColor getColor() { return color; }
     public void setColor(ButtonColor color) { this.color = color; }
-    public String getCustomColor() { return customColor; }
-    public void setCustomColor(String customColor) { this.customColor = customColor; }
     public ButtonIcon getIcon() { return icon; }
     public void setIcon(ButtonIcon icon) { this.icon = icon; }
     public List<CommandEntry> getCommands() { return commands; }
     public void addCommand(CommandEntry command) { commands.add(command); }
 
-    /** Format code for rendering the button label: custom colors use the
-     *  MC hex format (§x + §R§R§G§G§B§B), enum colors use their § code. */
-    public String getDisplayCode() {
-        if (customColor != null && !customColor.isEmpty()) return hexCode(customColor);
-        return color.getCode();
-    }
-
-    public static String hexCode(String hex) {
-        StringBuilder sb = new StringBuilder("§x");
-        for (char c : hex.toCharArray()) sb.append('§').append(c);
-        return sb.toString();
-    }
-
     public JsonObject toJson() {
         JsonObject json = new JsonObject();
         json.addProperty("name", name);
         json.addProperty("color", color.name());
-        if (customColor != null) json.addProperty("customColor", customColor);
         json.addProperty("icon", icon.name());
         JsonArray commandsArray = new JsonArray();
         for (CommandEntry command : commands) {
@@ -71,10 +52,6 @@ public class ButtonData {
         if (json.has("color")) {
             try { button.setColor(ButtonColor.valueOf(json.get("color").getAsString())); }
             catch (Exception e) { button.setColor(ButtonColor.DEFAULT); }
-        }
-        if (json.has("customColor") && !json.get("customColor").isJsonNull()) {
-            try { button.setCustomColor(json.get("customColor").getAsString()); }
-            catch (Exception e) { button.setCustomColor(null); }
         }
         if (json.has("icon")) {
             try { button.setIcon(ButtonIcon.valueOf(json.get("icon").getAsString())); }
