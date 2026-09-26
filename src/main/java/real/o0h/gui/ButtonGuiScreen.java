@@ -335,7 +335,44 @@ public class ButtonGuiScreen extends BaseOwoScreen<FlowLayout> {
             }
         }
         sb.append(btn.getName());
-        return sb.toString();
+        return clipToWidth(sb.toString(), 88);
+    }
+
+    /**
+     * Clip text to a max pixel width so long button names do not overflow
+     * the button. Works on visible characters while preserving the § format
+     * codes attached to each character, and appends an ellipsis. The full
+     * name is still shown in the button tooltip.
+     */
+    private String clipToWidth(String text, int maxWidth) {
+        var font = Minecraft.getInstance().font;
+        if (font.width(Component.literal(text)) <= maxWidth) return text;
+
+        // Split into visible chars, each carrying its leading format codes.
+        java.util.List<String> pieces = new java.util.ArrayList<>();
+        StringBuilder codes = new StringBuilder();
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c == '§' && i + 1 < text.length()) {
+                codes.append(c).append(text.charAt(++i));
+                continue;
+            }
+            pieces.add(codes.toString() + c);
+            codes.setLength(0);
+        }
+
+        StringBuilder acc = new StringBuilder();
+        StringBuilder kept = new StringBuilder();
+        String lastCodes = "";
+        for (String piece : pieces) {
+            int codeEnd = 0;
+            while (codeEnd + 1 < piece.length() && piece.charAt(codeEnd) == '§') codeEnd += 2;
+            lastCodes = piece.substring(0, codeEnd);
+            acc.append(piece);
+            if (font.width(Component.literal(acc.toString())) > maxWidth) break;
+            kept.append(piece);
+        }
+        return kept + lastCodes + "…";
     }
 
     private List<Component> makeTooltip(ButtonData btn) {
