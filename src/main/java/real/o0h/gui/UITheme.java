@@ -29,6 +29,10 @@ public final class UITheme {
     public static final int COL_DANGER_DIM = 0x40E5605B;
     public static final int COL_WARN = 0xFFE2B93B;
     public static final int COL_WARN_DIM = 0x40E2B93B;
+    public static final int COL_CMD = 0xFF5B8CFF;
+    public static final int COL_CMD_DIM = 0x2A5B8CFF;
+    public static final int COL_MSG = 0xFF5FCB7A;
+    public static final int COL_MSG_DIM = 0x2A5FCB7A;
     public static final int COL_MOVE = COL_ACCENT;
     public static final int COL_MOVE_DIM = COL_ACCENT_DIM;
 

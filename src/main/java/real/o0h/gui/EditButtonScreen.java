@@ -134,7 +134,16 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
         FlowLayout nameCard = card();
         nameCard.child(cardHeader("Name"));
 
+        // 3.4-style name field: dark strip + top hairline, borderless text.
+        FlowLayout nameStrip = UIContainers.horizontalFlow(
+            Sizing.fill(100),
+            Sizing.fixed(16)
+        );
+        nameStrip.surface(UITheme.inputStrip());
+        nameStrip.verticalAlignment(VerticalAlignment.CENTER);
         nameField = UIComponents.textBox(Sizing.fill(100));
+        nameField.setBordered(false);
+        nameField.setTextColor(UITheme.COL_TEXT);
         nameField.setMaxLength(100);
         nameField.setSuggestion("Enter button name...");
         nameField.onChanged().subscribe(s -> {
@@ -144,7 +153,8 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
         if (existingButton != null) nameField.setValue(
             existingButton.getName()
         );
-        nameCard.child(nameField);
+        nameStrip.child(nameField);
+        nameCard.child(nameStrip);
         panel.child(nameCard);
 
         FlowLayout appearCard = card();
@@ -176,17 +186,16 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
             Sizing.content()
         );
         previewBox
-            .surface(Surface.flat(0x55000000))
+            .surface(UITheme.inputStrip())
             .padding(Insets.of(5))
             .verticalAlignment(VerticalAlignment.CENTER);
         previewBox.child(
             UIComponents.label(
-                Component.literal("Preview  ").withStyle(
-                    ChatFormatting.DARK_GRAY
-                )
-            )
+                Component.literal("Preview  ")
+            ).color(Color.ofArgb(UITheme.COL_TEXT_DIM))
         );
         previewLabel = UIComponents.label(Component.literal(""));
+        previewLabel.color(Color.ofArgb(UITheme.COL_TEXT));
         previewBox.child(previewLabel);
         appearCard.child(previewBox);
 
@@ -213,9 +222,9 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
         );
         addCmdRow.gap(4);
 
-        ButtonComponent addCmdBtn = UIComponents.button(
-            Component.literal("§9+ Command"),
-            b -> {
+        FlowLayout addCmdBtn = clickablePill(
+            Component.literal(UITheme.fmt(UITheme.COL_CMD) + "+ Command"),
+            UITheme.COL_CMD, UITheme.COL_CMD_DIM, false, PAIR_BTN, () -> {
                 commandWidgets.add(
                     new CommandWidget("/", ButtonData.CommandType.COMMAND)
                 );
@@ -223,14 +232,13 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
                 needsRefresh = true;
             }
         );
-        addCmdBtn.horizontalSizing(Sizing.fixed(PAIR_BTN));
         addCmdBtn.tooltip(
             Component.literal("Add a slash command  (e.g. /tp, /gamemode)")
         );
 
-        ButtonComponent addMsgBtn = UIComponents.button(
-            Component.literal("§a+ Message"),
-            b -> {
+        FlowLayout addMsgBtn = clickablePill(
+            Component.literal(UITheme.fmt(UITheme.COL_MSG) + "+ Message"),
+            UITheme.COL_MSG, UITheme.COL_MSG_DIM, false, PAIR_BTN, () -> {
                 commandWidgets.add(
                     new CommandWidget("", ButtonData.CommandType.MESSAGE)
                 );
@@ -238,7 +246,6 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
                 needsRefresh = true;
             }
         );
-        addMsgBtn.horizontalSizing(Sizing.fixed(PAIR_BTN));
         addMsgBtn.tooltip(
             Component.literal("Add a plain chat message to send")
         );
@@ -397,9 +404,13 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
             commandListLayout.child(
                 UIComponents.label(
                     Component.literal(
-                        "No actions yet — add a §9Command§7 or §aMessage§7 below"
-                    ).withStyle(ChatFormatting.DARK_GRAY)
-                ).margins(Insets.of(6))
+                        "No actions yet — add a "
+                        + UITheme.fmt(UITheme.COL_CMD) + "Command"
+                        + UITheme.fmt(UITheme.COL_TEXT_DIM) + " or "
+                        + UITheme.fmt(UITheme.COL_MSG) + "Message"
+                        + UITheme.fmt(UITheme.COL_TEXT_DIM) + " below"
+                    )
+                ).color(Color.ofArgb(UITheme.COL_TEXT_DIM)).margins(Insets.of(6))
             );
             return;
         }
@@ -408,13 +419,17 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
             final int idx = i;
             CommandWidget cw = commandWidgets.get(i);
             boolean isCmd = cw.type == ButtonData.CommandType.COMMAND;
+            int accent = isCmd ? UITheme.COL_CMD : UITheme.COL_MSG;
+            int accentDim = isCmd ? UITheme.COL_CMD_DIM : UITheme.COL_MSG_DIM;
 
+            // 3.4-style row: tinted translucent background (blue for CMD,
+            // green for MSG), badge pill, borderless field, mini action pills.
             FlowLayout rowWrap = UIContainers.verticalFlow(
                 Sizing.fill(100),
                 Sizing.content()
             );
             rowWrap
-                .surface(Surface.flat(isCmd ? 0x55152235 : 0x55152515))
+                .surface(Surface.flat(accentDim))
                 .padding(Insets.of(3))
                 .margins(Insets.bottom(2));
 
@@ -424,9 +439,9 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
             );
             row.gap(2).verticalAlignment(VerticalAlignment.CENTER);
 
-            ButtonComponent typeBtn = UIComponents.button(
-                Component.literal(isCmd ? "§9CMD" : "§aMSG"),
-                b -> {
+            FlowLayout typeBtn = clickablePill(
+                Component.literal(UITheme.fmt(accent) + (isCmd ? "CMD" : "MSG")),
+                accent, accentDim, false, 36, () -> {
                     cw.type = isCmd
                         ? ButtonData.CommandType.MESSAGE
                         : ButtonData.CommandType.COMMAND;
@@ -437,7 +452,6 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
                     needsRefresh = true;
                 }
             );
-            typeBtn.horizontalSizing(Sizing.fixed(36));
             typeBtn.tooltip(
                 Component.literal(
                     isCmd
@@ -448,9 +462,9 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
 
             TextBoxComponent field = cw.createField(FIELD_W);
 
-            ButtonComponent upBtn = UIComponents.button(
+            FlowLayout upBtn = clickablePill(
                 Component.literal("↑"),
-                b -> {
+                UITheme.COL_TEXT_DIM, 0x18FFFFFF, false, 16, () -> {
                     if (idx > 0) {
                         CommandWidget tmp = commandWidgets.get(idx);
                         commandWidgets.set(idx, commandWidgets.get(idx - 1));
@@ -460,11 +474,10 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
                     }
                 }
             );
-            upBtn.horizontalSizing(Sizing.fixed(16));
 
-            ButtonComponent downBtn = UIComponents.button(
+            FlowLayout downBtn = clickablePill(
                 Component.literal("↓"),
-                b -> {
+                UITheme.COL_TEXT_DIM, 0x18FFFFFF, false, 16, () -> {
                     if (idx < commandWidgets.size() - 1) {
                         CommandWidget tmp = commandWidgets.get(idx);
                         commandWidgets.set(idx, commandWidgets.get(idx + 1));
@@ -474,17 +487,15 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
                     }
                 }
             );
-            downBtn.horizontalSizing(Sizing.fixed(16));
 
-            ButtonComponent delBtn = UIComponents.button(
-                Component.literal("§c✖"),
-                b -> {
+            FlowLayout delBtn = clickablePill(
+                Component.literal("✕"),
+                UITheme.COL_DANGER, 0x18FFFFFF, false, 16, () -> {
                     commandWidgets.remove(idx);
                     rebuildCommandList();
                     needsRefresh = true;
                 }
             );
-            delBtn.horizontalSizing(Sizing.fixed(16));
 
             row.child(typeBtn)
                 .child(field)
@@ -576,6 +587,8 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
 
         TextBoxComponent createField(int width) {
             textField = UIComponents.textBox(Sizing.fixed(width));
+            textField.setBordered(false);
+            textField.setTextColor(UITheme.COL_TEXT);
             textField.setValue(text);
             textField.setMaxLength(256);
             textField.onChanged().subscribe(s -> text = s);

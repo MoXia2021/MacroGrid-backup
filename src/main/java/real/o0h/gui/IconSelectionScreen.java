@@ -2,8 +2,10 @@ package real.o0h.gui;
 
 import real.o0h.config.ButtonData;
 import io.wispforest.owo.ui.base.BaseOwoScreen;
+import io.wispforest.owo.ui.component.LabelComponent;
 import io.wispforest.owo.ui.component.UIComponents;
 import io.wispforest.owo.ui.container.FlowLayout;
+import io.wispforest.owo.ui.container.ScrollContainer;
 import io.wispforest.owo.ui.container.UIContainers;
 import io.wispforest.owo.ui.core.*;
 import net.minecraft.ChatFormatting;
@@ -59,12 +61,22 @@ public class IconSelectionScreen extends BaseOwoScreen<FlowLayout> {
                     : icon.getSymbol() + " " + icon.getName();
 
             final ButtonData.ButtonIcon captured = icon;
-            var btn = UIComponents.button(Component.literal(label),
-                    b -> onIconSelected.accept(captured));
-            btn.horizontalSizing(Sizing.fill(25));
-            btn.tooltip(Component.literal(icon.getName()));
+            FlowLayout cell = UIContainers.horizontalFlow(
+                Sizing.fill(25), Sizing.fixed(18)
+            );
+            cell.surface(UITheme.card(UITheme.COL_ACCENT_DIM));
+            cell.horizontalAlignment(HorizontalAlignment.CENTER);
+            cell.verticalAlignment(VerticalAlignment.CENTER);
+            LabelComponent lbl = UIComponents.label(Component.literal(label));
+            lbl.shadow(false);
+            cell.child(lbl);
+            cell.tooltip(Component.literal(icon.getName()));
+            cell.mouseDown().subscribe((click, doubled) -> {
+                if (click.button() == 0) { onIconSelected.accept(captured); return true; }
+                return false;
+            });
 
-            row.child(btn);
+            row.child(cell);
             col++;
 
             if (col >= ICONS_PER_ROW) {
@@ -76,11 +88,25 @@ public class IconSelectionScreen extends BaseOwoScreen<FlowLayout> {
         if (col > 0 && row != null) iconGrid.child(row);
 
         var scroll = UIContainers.verticalScroll(Sizing.fill(100), Sizing.fixed(180), iconGrid);
+        scroll
+            .scrollbar(ScrollContainer.Scrollbar.vanillaFlat())
+            .scrollbarThiccness(5);
         scroll.margins(Insets.bottom(4));
         panel.child(scroll);
 
-        var cancelBtn = UIComponents.button(Component.literal("Cancel"), b -> onCancel.run());
-        cancelBtn.horizontalSizing(Sizing.fill(100));
+        FlowLayout cancelBtn = UIContainers.horizontalFlow(
+            Sizing.fill(100), Sizing.fixed(18)
+        );
+        cancelBtn.surface(UITheme.pill(UITheme.COL_DANGER, UITheme.COL_DANGER_DIM, false));
+        cancelBtn.horizontalAlignment(HorizontalAlignment.CENTER);
+        cancelBtn.verticalAlignment(VerticalAlignment.CENTER);
+        LabelComponent cancelLbl = UIComponents.label(Component.literal("Cancel"));
+        cancelLbl.shadow(false);
+        cancelBtn.child(cancelLbl);
+        cancelBtn.mouseDown().subscribe((click, doubled) -> {
+            if (click.button() == 0) { onCancel.run(); return true; }
+            return false;
+        });
         panel.child(cancelBtn);
 
         root.child(panel);
