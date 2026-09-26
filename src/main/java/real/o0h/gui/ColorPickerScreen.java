@@ -65,12 +65,12 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
             .verticalAlignment(VerticalAlignment.CENTER);
 
         int pad = 8;
-        int winW = 420;
-        int svH = 200;
-        int hueBarW = 16;
-        int previewH = 52;
-        int leftW = 220;
-        int rightW = 180;
+        int winW = Math.max(200, (int) (this.width * 0.5));
+        int svH = Math.max(50, (int) (this.height * 0.22));
+        int hueBarW = 14;
+        int previewH = Math.max(20, svH / 3);
+        int leftW = (int) (winW * 0.45);
+        int rightW = winW - pad * 2 - leftW - 10;
 
         FlowLayout panel = UIContainers.verticalFlow(
             Sizing.fixed(winW),
@@ -128,7 +128,7 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
             Sizing.fixed(rightW),
             Sizing.content()
         );
-        right.gap(3).verticalAlignment(VerticalAlignment.CENTER);
+        right.gap(2).verticalAlignment(VerticalAlignment.CENTER);
 
         hSlider = gradSlider(new int[] { 0xFFFF0000, 0xFFFFFF00, 0xFF00FF00, 0xFF00FFFF, 0xFF0000FF, 0xFFFF00FF, 0xFFFF0000 }, v -> { if (!updating) { h = v.floatValue(); refresh(); } });
         sSlider = gradSlider(new int[] { 0xFFFFFFFF, 0xFFFF0000 }, v -> { if (!updating) { s = v.floatValue(); refresh(); } });
@@ -168,6 +168,7 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
         );
         hexBox = UIComponents.textBox(Sizing.fill(100));
         hexBox.setValue(toHex());
+        hexBox.setBordered(false);
         hexBox.setFilter(s -> s.matches("[0-9a-fA-F]{0,8}"));
         hexBox.setResponder(t -> {
             if (updating) return;
@@ -260,8 +261,9 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
     }
 
     private TextBoxComponent numBox() {
-        TextBoxComponent box = UIComponents.textBox(Sizing.fixed(36));
+        TextBoxComponent box = UIComponents.textBox(Sizing.fixed(32));
         box.setFilter(s -> s.matches("\\d*"));
+        box.setBordered(false);
         return box;
     }
 
@@ -272,7 +274,7 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
         );
         row.gap(4).verticalAlignment(VerticalAlignment.CENTER);
         row.child(
-            UIComponents.label(Component.literal(label)).horizontalSizing(Sizing.fixed(16))
+            UIComponents.label(Component.literal(label)).horizontalSizing(Sizing.fixed(14))
         );
         row.child(slider);
         row.child(box);
@@ -371,14 +373,13 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
 
         @Override
         public void draw(OwoUIGraphics ctx, int mouseX, int mouseY, float partialTicks, float delta) {
-            int segments = 24;
-            for (int i = 0; i < segments; i++) {
-                float s = i / (float) segments;
+            if (width() <= 0 || height() <= 0) return;
+            // Per-pixel gradient for smooth color transitions (no banding).
+            for (int i = 0; i < width(); i++) {
+                float s = i / (float) width();
                 int top = 0xFF000000 | pack(hsvToRgb(hue, s, 1f));
                 int bottom = 0xFF000000 | pack(hsvToRgb(hue, s, 0f));
-                int x1 = x() + i * width() / segments;
-                int x2 = x() + (i + 1) * width() / segments;
-                ctx.drawGradientRect(x1, y(), x2, y() + height(), top, top, bottom, bottom);
+                ctx.drawGradientRect(x() + i, y(), x() + i + 1, y() + height(), top, top, bottom, bottom);
             }
             // Cross-hair marker spanning the whole canvas (white 2px + dark shadow).
             int cx = x() + (int) (sat * width());
@@ -403,8 +404,8 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
 
         private void pick(double mx, double my) {
             if (width() <= 0 || height() <= 0) return;
-            sat = (float) Math.min(1, Math.max(0, (mx - x()) / width()));
-            val = (float) Math.min(1, Math.max(0, 1 - (my - y()) / height()));
+            sat = (float) Math.min(1, Math.max(0, mx / width()));
+            val = (float) Math.min(1, Math.max(0, 1 - my / height()));
             if (onPick != null) onPick.accept(new float[] { sat, val });
         }
     }
@@ -420,13 +421,12 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
 
         @Override
         public void draw(OwoUIGraphics ctx, int mouseX, int mouseY, float partialTicks, float delta) {
-            int segments = 24;
-            for (int i = 0; i < segments; i++) {
-                float h1 = i / (float) segments;
+            if (height() <= 0) return;
+            // Per-pixel gradient for smooth hue transitions (no banding).
+            for (int i = 0; i < height(); i++) {
+                float h1 = i / (float) height();
                 int color = 0xFF000000 | pack(hsvToRgb(h1, 1f, 1f));
-                int y1 = y() + i * height() / segments;
-                int y2 = y() + (i + 1) * height() / segments;
-                ctx.drawGradientRect(x(), y1, x() + width(), y2, color, color, color, color);
+                ctx.drawGradientRect(x(), y() + i, x() + width(), y() + i + 1, color, color, color, color);
             }
             // Horizontal tick at current hue (white 2px + dark shadow).
             int cy = y() + (int) (hue * height());
@@ -448,7 +448,7 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
 
         private void pick(double my) {
             if (height() <= 0) return;
-            hue = (float) Math.min(1, Math.max(0, (my - y()) / height()));
+            hue = (float) Math.min(1, Math.max(0, my / height()));
             if (onPick != null) onPick.accept(hue);
         }
     }
@@ -503,7 +503,7 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
 
         private void pick(double mx) {
             if (width() <= 0) return;
-            value = Math.min(1, Math.max(0, (mx - x()) / width()));
+            value = Math.min(1, Math.max(0, mx / width()));
             if (onChanged != null) onChanged.accept(value);
         }
     }
