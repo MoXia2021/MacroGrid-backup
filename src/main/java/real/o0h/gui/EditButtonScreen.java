@@ -121,7 +121,7 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
             Sizing.fixed(320),
             Sizing.content()
         );
-        panel.surface(UITheme.panel()).padding(Insets.of(8));
+        panel.surface(UITheme.panel()).padding(Insets.of(5));
 
         FlowLayout titleWrap = UIContainers.horizontalFlow(
             Sizing.fill(100),
@@ -135,7 +135,7 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
                 ).withStyle(ChatFormatting.BOLD)
             ).color(Color.ofArgb(UITheme.COL_TEXT))
         );
-        titleWrap.margins(Insets.bottom(8));
+        titleWrap.margins(Insets.bottom(4));
         panel.child(titleWrap);
 
         FlowLayout nameCard = card();
@@ -169,7 +169,7 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
             Sizing.fill(100),
             Sizing.content()
         );
-        colorIconRow.gap(4).margins(Insets.bottom(6));
+        colorIconRow.gap(4).margins(Insets.bottom(3));
 
         FlowLayout colorButton = clickableCard(
             Component.literal(colorLabel()), UITheme.COL_ACCENT_DIM, PAIR_BTN,
@@ -192,7 +192,7 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
         );
         previewBox
             .surface(UITheme.inputStrip())
-            .padding(Insets.of(5))
+            .padding(Insets.of(4))
             .verticalAlignment(VerticalAlignment.CENTER);
         previewBox.child(
             UIComponents.label(
@@ -216,12 +216,12 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
         // Compact command list area: fits ~3 rows on screen, scrollbar visible.
         var scroll = UIContainers.verticalScroll(
             Sizing.fill(100),
-            Sizing.fixed(72),
+            Sizing.fixed(66),
             commandListLayout
         );
         scroll.scrollbar(ScrollContainer.Scrollbar.vanillaFlat());
         scroll.scrollbarThiccness(5);
-        scroll.margins(Insets.bottom(6));
+        scroll.margins(Insets.bottom(3));
         actionsCard.child(scroll);
 
         FlowLayout addCmdRow = UIContainers.horizontalFlow(
@@ -314,8 +314,8 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
             Sizing.content()
         );
         card.surface(UITheme.subCard())
-            .padding(Insets.of(6))
-            .margins(Insets.bottom(6));
+            .padding(Insets.of(4))
+            .margins(Insets.bottom(4));
         return card;
     }
 
@@ -323,7 +323,7 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
         LabelComponent label = UIComponents.label(
             Component.literal(text)
         );
-        label.color(Color.ofArgb(UITheme.COL_TEXT_DIM)).margins(Insets.bottom(4));
+        label.color(Color.ofArgb(UITheme.COL_TEXT_DIM)).margins(Insets.bottom(2));
         return label;
     }
 
