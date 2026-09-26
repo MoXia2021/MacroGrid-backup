@@ -123,13 +123,20 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
         );
         panel.surface(UITheme.panel()).padding(Insets.of(8));
 
-        panel.child(
+        FlowLayout titleWrap = UIContainers.horizontalFlow(
+            Sizing.fill(100),
+            Sizing.content()
+        );
+        titleWrap.horizontalAlignment(HorizontalAlignment.CENTER);
+        titleWrap.child(
             UIComponents.label(
                 Component.literal(
-                    isAddMode ? "▶  Add New Button" : "▶  Edit Button"
+                    isAddMode ? "Add New Button" : "Edit Button"
                 ).withStyle(ChatFormatting.BOLD)
-            ).color(Color.ofArgb(UITheme.COL_TEXT)).margins(Insets.bottom(8))
+            ).color(Color.ofArgb(UITheme.COL_TEXT))
         );
+        titleWrap.margins(Insets.bottom(8));
+        panel.child(titleWrap);
 
         FlowLayout nameCard = card();
         nameCard.child(cardHeader("Name"));
@@ -202,17 +209,22 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
         panel.child(appearCard);
 
         FlowLayout actionsCard = card();
-        actionsCard.child(cardHeader("Actions"));
+        actionsCard.child(cardHeader("Commands"));
 
         commandListLayout = UIContainers.verticalFlow(
             Sizing.fill(100),
             Sizing.content()
         );
+        // Command list scrolls independently with a visible scrollbar, like 3.4.
+        int listH = Math.max(90,
+            Minecraft.getInstance().getWindow().getGuiScaledHeight() - 240);
         var scroll = UIContainers.verticalScroll(
             Sizing.fill(100),
-            Sizing.fixed(90),
+            Sizing.fixed(listH),
             commandListLayout
         );
+        scroll.scrollbar(ScrollContainer.Scrollbar.vanillaFlat());
+        scroll.scrollbarThiccness(5);
         scroll.margins(Insets.bottom(6));
         actionsCard.child(scroll);
 
@@ -314,7 +326,7 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
 
     private static LabelComponent cardHeader(String text) {
         LabelComponent label = UIComponents.label(
-            Component.literal(text + " ─")
+            Component.literal(text)
         );
         label.color(Color.ofArgb(UITheme.COL_TEXT_DIM)).margins(Insets.bottom(4));
         return label;
@@ -383,16 +395,16 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
     private String colorLabel() {
         if (
             currentColor == ButtonData.ButtonColor.DEFAULT
-        ) return "§7Color  ·  Default";
-        return "Color  ·  " + currentColor.getDisplayName();
+        ) return "§7Color: Default";
+        return "Color: " + currentColor.getDisplayName();
     }
 
     private String iconLabel() {
         if (
             currentIcon == null || currentIcon == ButtonData.ButtonIcon.NONE
-        ) return "§7Icon  ·  None";
+        ) return "§7Icon: None";
         return (
-            "Icon  ·  " + currentIcon.getSymbol() + "  " + currentIcon.getName()
+            "Icon: " + currentIcon.getSymbol() + "  " + currentIcon.getName()
         );
     }
 
@@ -430,7 +442,7 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
             );
             rowWrap
                 .surface(Surface.flat(accentDim))
-                .padding(Insets.of(3))
+                .padding(Insets.of(2))
                 .margins(Insets.bottom(2));
 
             FlowLayout row = UIContainers.horizontalFlow(
@@ -441,7 +453,7 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
 
             FlowLayout typeBtn = clickablePill(
                 Component.literal(UITheme.fmt(accent) + (isCmd ? "CMD" : "MSG")),
-                accent, accentDim, false, 36, () -> {
+                accent, accentDim, false, 34, () -> {
                     cw.type = isCmd
                         ? ButtonData.CommandType.MESSAGE
                         : ButtonData.CommandType.COMMAND;
@@ -464,7 +476,7 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
 
             FlowLayout upBtn = clickablePill(
                 Component.literal("↑"),
-                UITheme.COL_TEXT_DIM, 0x18FFFFFF, false, 16, () -> {
+                UITheme.COL_TEXT_DIM, 0x18FFFFFF, false, 14, () -> {
                     if (idx > 0) {
                         CommandWidget tmp = commandWidgets.get(idx);
                         commandWidgets.set(idx, commandWidgets.get(idx - 1));
@@ -477,7 +489,7 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
 
             FlowLayout downBtn = clickablePill(
                 Component.literal("↓"),
-                UITheme.COL_TEXT_DIM, 0x18FFFFFF, false, 16, () -> {
+                UITheme.COL_TEXT_DIM, 0x18FFFFFF, false, 14, () -> {
                     if (idx < commandWidgets.size() - 1) {
                         CommandWidget tmp = commandWidgets.get(idx);
                         commandWidgets.set(idx, commandWidgets.get(idx + 1));
