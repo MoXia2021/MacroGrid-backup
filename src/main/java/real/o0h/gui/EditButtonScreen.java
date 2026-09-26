@@ -283,27 +283,17 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
         saveRow.child(saveBtn).child(cancelBtn);
         panel.child(saveRow);
 
-        // ---- Old full-screen scroll (kept commented out for reference) ----
-        // var mainScroll = UIContainers.verticalScroll(
-        //     Sizing.fill(100),
+        // Panel is centered by the root layout itself; no outer scroll wrapper,
+        // so the window stays fixed in the middle of the screen.
+        // ---- Scrollable wrapper (kept commented out for reference) ----
+        // var mainScroll = new DragScrollContainer<>(
+        //     ScrollContainer.ScrollDirection.VERTICAL,
+        //     Sizing.fixed(320),
         //     Sizing.fill(100),
         //     panel
         // );
         // root.child(mainScroll);
-
-        // Scrollable panel: supports mouse-wheel AND click-and-drag scrolling,
-        // keeps the panel centered (not stretched over the whole screen).
-        // Use a clearly visible vanilla-style scrollbar instead of the default
-        // near-invisible dark one, and make it a bit thicker.
-        var mainScroll = new DragScrollContainer<>(
-            ScrollContainer.ScrollDirection.VERTICAL,
-            Sizing.fixed(320),
-            Sizing.fill(100),
-            panel
-        );
-        // No visible scrollbar on the panel itself: content fits one screen.
-        // The container stays as a fallback for very small windows.
-        root.child(mainScroll);
+        root.child(panel);
         rebuildCommandList();
         updatePreview();
     }
