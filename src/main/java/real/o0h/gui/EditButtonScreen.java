@@ -213,12 +213,14 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
             Sizing.fill(100),
             Sizing.content()
         );
-        // Compact command list area: fits ~3 rows on screen, no big scrollbar.
+        // Compact command list area: fits ~3 rows on screen, scrollbar visible.
         var scroll = UIContainers.verticalScroll(
             Sizing.fill(100),
-            Sizing.fixed(84),
+            Sizing.fixed(72),
             commandListLayout
         );
+        scroll.scrollbar(ScrollContainer.Scrollbar.vanillaFlat());
+        scroll.scrollbarThiccness(5);
         scroll.margins(Insets.bottom(6));
         actionsCard.child(scroll);
 
@@ -299,9 +301,8 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
             Sizing.fill(100),
             panel
         );
-        mainScroll
-            .scrollbar(ScrollContainer.Scrollbar.vanillaFlat())
-            .scrollbarThiccness(5);
+        // No visible scrollbar on the panel itself: content fits one screen.
+        // The container stays as a fallback for very small windows.
         root.child(mainScroll);
         rebuildCommandList();
         updatePreview();
