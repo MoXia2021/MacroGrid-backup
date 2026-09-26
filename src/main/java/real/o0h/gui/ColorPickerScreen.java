@@ -57,24 +57,30 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
 
     @Override
     protected void build(FlowLayout root) {
-        // Compact fixed-size window (~1/4 of the screen), centered.
-        // All sizes are fixed in GUI units; no fill() siblings, so nothing
-        // overflows, stretches, or gets pushed out of the window.
+        // Window: ~55% of screen width, height fits content, centered.
+        // Every size is explicit (fixed) so nothing overflows, stretches,
+        // or gets pushed out of the window.
         root.surface(Surface.flat(0x00000000))
             .horizontalAlignment(HorizontalAlignment.CENTER)
             .verticalAlignment(VerticalAlignment.CENTER);
 
         int pad = 8;
-        int winW = Math.max(200, (int) (this.width * 0.5));
-        int svH = Math.max(50, (int) (this.height * 0.22));
+        int winW = Math.max(220, (int) (this.width * 0.55));
         int hueBarW = 14;
-        int previewH = Math.max(20, svH / 3);
-        int leftW = (int) (winW * 0.45);
+        int previewH = 36;
+        int leftW = (int) (winW * 0.46);
         int rightW = winW - pad * 2 - leftW - 10;
+        int rowH = 14; // compact bordered text box (12) + margins (2)
+        // 7 slider rows + HEX row + confirm row, all explicit heights.
+        int rightH = 7 * rowH + 6 * 2 + (rowH + 4) + (20 + 6);
+        // SV canvas height fills the left column so there is no dead space.
+        int svH = Math.max(60, rightH - previewH - 4);
+        int bodyH = rightH;
+        int winH = pad * 2 + 26 + bodyH;
 
         FlowLayout panel = UIContainers.verticalFlow(
             Sizing.fixed(winW),
-            Sizing.content()
+            Sizing.fixed(winH)
         );
         panel.surface(Surface.flat(0xC0000000)).padding(Insets.of(pad));
 
@@ -88,14 +94,14 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
         // Body: left column (canvas + preview) and right column (sliders).
         FlowLayout body = UIContainers.horizontalFlow(
             Sizing.fill(100),
-            Sizing.content()
+            Sizing.fixed(bodyH)
         );
         body.gap(10);
 
         // ---- Left column ----
         FlowLayout left = UIContainers.verticalFlow(
             Sizing.fixed(leftW),
-            Sizing.content()
+            Sizing.fixed(bodyH)
         );
         left.gap(4);
 
@@ -126,9 +132,9 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
         // ---- Right column ----
         FlowLayout right = UIContainers.verticalFlow(
             Sizing.fixed(rightW),
-            Sizing.content()
+            Sizing.fixed(rightH)
         );
-        right.gap(2).verticalAlignment(VerticalAlignment.CENTER);
+        right.gap(2);
 
         hSlider = gradSlider(new int[] { 0xFFFF0000, 0xFFFFFF00, 0xFF00FF00, 0xFF00FFFF, 0xFF0000FF, 0xFFFF00FF, 0xFFFF0000 }, v -> { if (!updating) { h = v.floatValue(); refresh(); } });
         sSlider = gradSlider(new int[] { 0xFFFFFFFF, 0xFFFF0000 }, v -> { if (!updating) { s = v.floatValue(); refresh(); } });
@@ -160,15 +166,15 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
         // HEX input row.
         FlowLayout hexRow = UIContainers.horizontalFlow(
             Sizing.fill(100),
-            Sizing.content()
+            Sizing.fixed(rowH)
         );
         hexRow.gap(4).verticalAlignment(VerticalAlignment.CENTER);
         hexRow.child(
-            UIComponents.label(Component.literal("HEX:")).horizontalSizing(Sizing.fixed(32))
+            UIComponents.label(Component.literal("HEX:")).horizontalSizing(Sizing.fixed(28))
         );
         hexBox = UIComponents.textBox(Sizing.fill(100));
+        hexBox.verticalSizing(Sizing.fixed(12));
         hexBox.setValue(toHex());
-        hexBox.setBordered(false);
         hexBox.setFilter(s -> s.matches("[0-9a-fA-F]{0,8}"));
         hexBox.setResponder(t -> {
             if (updating) return;
@@ -181,7 +187,7 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
         // Confirm button at the bottom right.
         FlowLayout confirmRow = UIContainers.horizontalFlow(
             Sizing.fill(100),
-            Sizing.content()
+            Sizing.fixed(26)
         );
         confirmRow.horizontalAlignment(HorizontalAlignment.RIGHT);
         var confirmBtn = UIComponents.button(
@@ -261,16 +267,16 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
     }
 
     private TextBoxComponent numBox() {
-        TextBoxComponent box = UIComponents.textBox(Sizing.fixed(32));
+        TextBoxComponent box = UIComponents.textBox(Sizing.fixed(40));
+        box.verticalSizing(Sizing.fixed(12));
         box.setFilter(s -> s.matches("\\d*"));
-        box.setBordered(false);
         return box;
     }
 
     private FlowLayout sliderRow(String label, GradientSlider slider, TextBoxComponent box) {
         FlowLayout row = UIContainers.horizontalFlow(
             Sizing.fill(100),
-            Sizing.content()
+            Sizing.fixed(14)
         );
         row.gap(4).verticalAlignment(VerticalAlignment.CENTER);
         row.child(
