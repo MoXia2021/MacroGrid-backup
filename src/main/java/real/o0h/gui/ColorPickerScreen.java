@@ -375,19 +375,20 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
         public void draw(OwoUIGraphics ctx, int mouseX, int mouseY, float partialTicks, float delta) {
             if (width() <= 0 || height() <= 0) return;
             // Per-pixel gradient for smooth color transitions (no banding).
+            // drawGradientRect signature: (x, y, width, height, tl, tr, br, bl)
             for (int i = 0; i < width(); i++) {
                 float s = i / (float) width();
                 int top = 0xFF000000 | pack(hsvToRgb(hue, s, 1f));
                 int bottom = 0xFF000000 | pack(hsvToRgb(hue, s, 0f));
-                ctx.drawGradientRect(x() + i, y(), x() + i + 1, y() + height(), top, top, bottom, bottom);
+                ctx.drawGradientRect(x() + i, y(), 1, height(), top, top, bottom, bottom);
             }
             // Cross-hair marker spanning the whole canvas (white 2px + dark shadow).
             int cx = x() + (int) (sat * width());
             int cy = y() + (int) ((1f - val) * height());
-            ctx.drawGradientRect(x(), cy + 3, x() + width(), cy + 4, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000);
-            ctx.drawGradientRect(cx + 3, y(), cx + 4, y() + height(), 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000);
-            ctx.drawGradientRect(x(), cy, x() + width(), cy + 2, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
-            ctx.drawGradientRect(cx, y(), cx + 2, y() + height(), 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
+            ctx.drawGradientRect(x(), cy + 3, width(), 1, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000);
+            ctx.drawGradientRect(cx + 3, y(), 1, height(), 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000);
+            ctx.drawGradientRect(x(), cy, width(), 2, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
+            ctx.drawGradientRect(cx, y(), 2, height(), 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
         }
 
         @Override
@@ -426,12 +427,12 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
             for (int i = 0; i < height(); i++) {
                 float h1 = i / (float) height();
                 int color = 0xFF000000 | pack(hsvToRgb(h1, 1f, 1f));
-                ctx.drawGradientRect(x(), y() + i, x() + width(), y() + i + 1, color, color, color, color);
+                ctx.drawGradientRect(x(), y() + i, width(), 1, color, color, color, color);
             }
             // Horizontal tick at current hue (white 2px + dark shadow).
             int cy = y() + (int) (hue * height());
-            ctx.drawGradientRect(x(), cy + 2, x() + width(), cy + 3, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000);
-            ctx.drawGradientRect(x(), cy, x() + width(), cy + 2, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
+            ctx.drawGradientRect(x(), cy + 2, width(), 1, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000);
+            ctx.drawGradientRect(x(), cy, width(), 2, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
         }
 
         @Override
@@ -472,21 +473,22 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
             if (width() <= 0 || height() <= 0) return;
             int n = colors.length;
             if (n >= 2) {
+                // Horizontal gradient segments: left = colors[i], right = colors[i+1].
                 for (int i = 0; i < n - 1; i++) {
                     int x1 = x() + i * width() / (n - 1);
-                    int x2 = x() + (i + 1) * width() / (n - 1);
-                    ctx.drawGradientRect(x1, y(), x2, y() + height(),
-                        colors[i], colors[i + 1], colors[i], colors[i + 1]);
+                    int segW = (i + 1) * width() / (n - 1) - x1;
+                    ctx.drawGradientRect(x1, y(), segW, height(),
+                        colors[i], colors[i + 1], colors[i + 1], colors[i]);
                 }
             } else {
-                ctx.drawGradientRect(x(), y(), x() + width(), y() + height(),
+                ctx.drawGradientRect(x(), y(), width(), height(),
                     colors[0], colors[0], colors[0], colors[0]);
             }
-            ctx.drawRectOutline(x(), y(), x() + width(), y() + height(), 1);
+            ctx.drawRectOutline(x(), y(), width(), height(), 0xFF888888);
             // Handle: white 2px bar with dark shadow.
             int hx = x() + (int) (value * (width() - 1));
-            ctx.drawGradientRect(hx + 3, y(), hx + 4, y() + height(), 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000);
-            ctx.drawGradientRect(hx, y(), hx + 2, y() + height(), 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
+            ctx.drawGradientRect(hx + 3, y(), 1, height(), 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000);
+            ctx.drawGradientRect(hx, y(), 2, height(), 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
         }
 
         @Override
