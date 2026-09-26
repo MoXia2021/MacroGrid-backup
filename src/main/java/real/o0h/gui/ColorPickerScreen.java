@@ -19,7 +19,8 @@ import java.util.function.Consumer;
  * cross-hair marker + vertical hue bar on the left, preview swatch below,
  * H/S/V/R/G/B/A gradient sliders with numeric inputs on the right,
  * HEX input at the bottom, and a confirm button at the bottom right.
- * The window takes 1/4 of the screen and is centered.
+ * The window is a compact fixed-size panel (~1/4 of the screen), centered,
+ * with a transparent backdrop so only the panel itself is visible.
  *
  * The picked color is reported as a hex string "RRGGBB" (alpha is shown in
  * the editor but not stored, since button colors cannot be translucent).
@@ -56,28 +57,24 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
 
     @Override
     protected void build(FlowLayout root) {
-        root.surface(Surface.VANILLA_TRANSLUCENT)
+        // Compact fixed-size window (~1/4 of the screen), centered.
+        // All sizes are fixed in GUI units; no fill() siblings, so nothing
+        // overflows, stretches, or gets pushed out of the window.
+        root.surface(Surface.flat(0x00000000))
             .horizontalAlignment(HorizontalAlignment.CENTER)
             .verticalAlignment(VerticalAlignment.CENTER);
 
-        // Window ~1/5 of the screen, centered. All child sizes are fixed so
-        // nothing gets pushed out by fill() siblings.
         int pad = 8;
-        int winW = Math.max(320, (int) (this.width * 0.42));
-        int winH = Math.max(240, (int) (this.height * 0.5));
-        int titleH = 20;
-        int bodyW = winW - pad * 2;
-        int bodyH = winH - pad * 2 - titleH;
-        int leftW = (int) (bodyW * 0.52);
-        int rightW = bodyW - leftW - 10;
+        int winW = 420;
+        int svH = 200;
         int hueBarW = 16;
-        int svH = Math.max(140, (int) (bodyH * 0.6));
-        int svW = leftW - hueBarW - 4;
         int previewH = 52;
+        int leftW = 220;
+        int rightW = 180;
 
         FlowLayout panel = UIContainers.verticalFlow(
             Sizing.fixed(winW),
-            Sizing.fixed(winH)
+            Sizing.content()
         );
         panel.surface(Surface.flat(0xC0000000)).padding(Insets.of(pad));
 
@@ -91,26 +88,26 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
         // Body: left column (canvas + preview) and right column (sliders).
         FlowLayout body = UIContainers.horizontalFlow(
             Sizing.fill(100),
-            Sizing.fill(100)
+            Sizing.content()
         );
         body.gap(10);
 
         // ---- Left column ----
         FlowLayout left = UIContainers.verticalFlow(
             Sizing.fixed(leftW),
-            Sizing.fill(100)
+            Sizing.content()
         );
         left.gap(4);
 
         FlowLayout svRow = UIContainers.horizontalFlow(
-            Sizing.fixed(svW + hueBarW + 4),
+            Sizing.fixed(leftW),
             Sizing.fixed(svH)
         );
         svRow.gap(4);
 
         svCanvas = new SvCanvas(arr -> onSvPicked(arr[0], arr[1]));
         svCanvas
-            .horizontalSizing(Sizing.fixed(svW))
+            .horizontalSizing(Sizing.fixed(leftW - hueBarW - 4))
             .verticalSizing(Sizing.fixed(svH));
         svRow.child(svCanvas);
 
