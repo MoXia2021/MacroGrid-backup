@@ -3,8 +3,6 @@ package real.o0h.gui;
 import io.wispforest.owo.ui.base.BaseOwoScreen;
 import io.wispforest.owo.ui.base.BaseUIComponent;
 import io.wispforest.owo.ui.component.BoxComponent;
-import io.wispforest.owo.ui.component.LabelComponent;
-import io.wispforest.owo.ui.component.SliderComponent;
 import io.wispforest.owo.ui.component.TextBoxComponent;
 import io.wispforest.owo.ui.component.UIComponents;
 import io.wispforest.owo.ui.container.FlowLayout;
@@ -17,9 +15,14 @@ import org.jetbrains.annotations.NotNull;
 import java.util.function.Consumer;
 
 /**
- * A full color editor: SV gradient canvas + vertical hue bar on the left,
- * linked HSV/RGBA sliders with numeric inputs, and a HEX input.
- * The picked color is reported as a hex string like "FF5B8C".
+ * A full color editor matching the classic layout: SV gradient canvas with a
+ * cross-hair marker + vertical hue bar on the left, preview swatch below,
+ * H/S/V/R/G/B/A gradient sliders with numeric inputs on the right,
+ * HEX input at the bottom, and a confirm button at the bottom right.
+ * The window takes 1/4 of the screen and is centered.
+ *
+ * The picked color is reported as a hex string "RRGGBB" (alpha is shown in
+ * the editor but not stored, since button colors cannot be translucent).
  */
 public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
 
@@ -28,17 +31,15 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
     private final String initialHex;
 
     // Working color state (all normalized 0..1)
-    private float h = 0f, s = 0f, v = 1f;
+    private float h = 0f, s = 0f, v = 1f, a = 1f;
     private boolean updating = false;
 
     private SvCanvas svCanvas;
     private HueBar hueBar;
     private BoxComponent previewBox;
-    private LabelComponent hexLabel;
 
-    private SliderComponent hSlider, sSlider, vSlider, rSlider, gSlider, bSlider;
-    private TextBoxComponent hBox, sBox, vBox, rBox, gBox, bBox, hexBox;
-    private LabelComponent hexValueLabel;
+    private GradientSlider hSlider, sSlider, vSlider, rSlider, gSlider, bSlider, aSlider;
+    private TextBoxComponent hBox, sBox, vBox, rBox, gBox, bBox, aBox, hexBox;
 
     public ColorPickerScreen(String initialHex, Consumer<String> onColorSelected, Runnable onCancel) {
         super(Component.translatable("macrogrid.color.title"));
@@ -59,126 +60,130 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
             .horizontalAlignment(HorizontalAlignment.CENTER)
             .verticalAlignment(VerticalAlignment.CENTER);
 
+        // Window = 1/4 of the screen, centered.
+        int winW = Math.max(360, this.width / 2);
+        int winH = Math.max(240, this.height / 2);
         FlowLayout panel = UIContainers.verticalFlow(
-            Sizing.fixed(400),
-            Sizing.content()
+            Sizing.fixed(winW),
+            Sizing.fixed(winH)
         );
-        panel.surface(Surface.flat(0xB0000000)).padding(Insets.of(6));
+        panel.surface(Surface.flat(0xC0000000)).padding(Insets.of(8));
 
         panel.child(
             UIComponents.label(
-                Component.literal("Choose a Color")
+                Component.literal("颜色编辑器")
                     .withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD)
-            ).margins(Insets.bottom(4))
+            ).margins(Insets.bottom(6))
         );
 
-        // Top row: SV canvas + hue bar + preview swatch.
-        FlowLayout topRow = UIContainers.horizontalFlow(
+        // Body: left column (canvas + preview) and right column (sliders).
+        FlowLayout body = UIContainers.horizontalFlow(
             Sizing.fill(100),
-            Sizing.content()
+            Sizing.fill(100)
         );
-        topRow.gap(4).margins(Insets.bottom(4));
+        body.gap(10);
+
+        // ---- Left column ----
+        FlowLayout left = UIContainers.verticalFlow(
+            Sizing.fill(58),
+            Sizing.fill(100)
+        );
+        left.gap(4);
+
+        FlowLayout svRow = UIContainers.horizontalFlow(
+            Sizing.fill(100),
+            Sizing.fill(100)
+        );
+        svRow.gap(4);
 
         svCanvas = new SvCanvas(arr -> onSvPicked(arr[0], arr[1]));
         svCanvas
             .horizontalSizing(Sizing.fill(100))
-            .verticalSizing(Sizing.fixed(190));
-        topRow.child(svCanvas);
+            .verticalSizing(Sizing.fill(100));
+        svRow.child(svCanvas);
 
         hueBar = new HueBar(this::onHuePicked);
         hueBar
-            .horizontalSizing(Sizing.fixed(14))
-            .verticalSizing(Sizing.fixed(190));
-        topRow.child(hueBar);
+            .horizontalSizing(Sizing.fixed(16))
+            .verticalSizing(Sizing.fill(100));
+        svRow.child(hueBar);
 
-        FlowLayout previewCol = UIContainers.verticalFlow(
-            Sizing.fixed(58),
+        left.child(svRow);
+
+        previewBox = UIComponents.box(Sizing.fixed(52), Sizing.fixed(52));
+        previewBox.color(Color.ofArgb(0xFF000000 | rgbInt()));
+        left.child(previewBox);
+
+        // ---- Right column ----
+        FlowLayout right = UIContainers.verticalFlow(
+            Sizing.fill(40),
             Sizing.content()
         );
-        previewCol.verticalAlignment(VerticalAlignment.CENTER);
-        previewBox = UIComponents.box(Sizing.fixed(46), Sizing.fixed(46));
-        previewBox.color(Color.ofArgb(rgbInt()));
-        previewCol.child(previewBox);
-        hexValueLabel = UIComponents.label(Component.literal(toHex()).withStyle(ChatFormatting.BOLD));
-        previewCol.child(hexValueLabel.margins(Insets.top(2)));
-        topRow.child(previewCol);
+        right.gap(3).verticalAlignment(VerticalAlignment.CENTER);
 
-        panel.child(topRow);
+        hSlider = gradSlider(new int[] { 0xFFFF0000, 0xFFFFFF00, 0xFF00FF00, 0xFF00FFFF, 0xFF0000FF, 0xFFFF00FF, 0xFFFF0000 }, v -> { if (!updating) { h = v.floatValue(); refresh(); } });
+        sSlider = gradSlider(new int[] { 0xFFFFFFFF, 0xFFFF0000 }, v -> { if (!updating) { s = v.floatValue(); refresh(); } });
+        vSlider = gradSlider(new int[] { 0xFF000000, 0xFFFF0000 }, vv -> { if (!updating) { v = vv.floatValue(); refresh(); } });
+        rSlider = gradSlider(new int[] { 0xFF000000, 0xFFFF0000 }, v -> { if (!updating) { fromRgb((int) (v * 255), g(), b()); refresh(); } });
+        gSlider = gradSlider(new int[] { 0xFF000000, 0xFF00FF00 }, v -> { if (!updating) { fromRgb(r(), (int) (v * 255), b()); refresh(); } });
+        bSlider = gradSlider(new int[] { 0xFF000000, 0xFF0000FF }, v -> { if (!updating) { fromRgb(r(), g(), (int) (v * 255)); refresh(); } });
+        aSlider = gradSlider(new int[] { 0xFF000000, 0xFFFFFFFF }, v -> { if (!updating) { a = v.floatValue(); refresh(); } });
 
-        // Slider rows: H S V R G B, each with a numeric box.
-        hSlider = slider(0.0); sSlider = slider(1.0); vSlider = slider(1.0);
-        rSlider = slider(1.0); gSlider = slider(1.0); bSlider = slider(1.0);
         hBox = numBox(); sBox = numBox(); vBox = numBox();
-        rBox = numBox(); gBox = numBox(); bBox = numBox();
-
-        hSlider.onChanged().subscribe(val -> { if (!updating) { h = (float) val; refresh(); } });
-        sSlider.onChanged().subscribe(val -> { if (!updating) { s = (float) val; refresh(); } });
-        vSlider.onChanged().subscribe(val -> { if (!updating) { v = (float) val; refresh(); } });
-        rSlider.onChanged().subscribe(val -> { if (!updating) { fromRgb((int) (val * 255), r(), g()); refresh(); } });
-        gSlider.onChanged().subscribe(val -> { if (!updating) { fromRgb(r(), (int) (val * 255), b()); refresh(); } });
-        bSlider.onChanged().subscribe(val -> { if (!updating) { fromRgb(r(), g(), (int) (val * 255)); refresh(); } });
+        rBox = numBox(); gBox = numBox(); bBox = numBox(); aBox = numBox();
 
         hBox.setResponder(t -> parseIntBox(t, 360, v -> h = v / 360f));
         sBox.setResponder(t -> parseIntBox(t, 100, v -> s = v / 100f));
         vBox.setResponder(t -> parseIntBox(t, 100, vv -> v = vv / 100f));
-        rBox.setResponder(t -> parseIntBox(t, 255, v -> fromRgb(v, r(), g())));
+        rBox.setResponder(t -> parseIntBox(t, 255, v -> fromRgb(v, g(), b())));
         gBox.setResponder(t -> parseIntBox(t, 255, v -> fromRgb(r(), v, b())));
         bBox.setResponder(t -> parseIntBox(t, 255, v -> fromRgb(r(), g(), v)));
+        aBox.setResponder(t -> parseIntBox(t, 255, v -> a = v / 255f));
 
-        panel.child(sliderRow("§cH:", hSlider, hBox));
-        panel.child(sliderRow("§aS:", sSlider, sBox));
-        panel.child(sliderRow("§9V:", vSlider, vBox));
-        panel.child(sliderRow("§4R:", rSlider, rBox));
-        panel.child(sliderRow("§2G:", gSlider, gBox));
-        panel.child(sliderRow("§1B:", bSlider, bBox));
+        right.child(sliderRow("H:", hSlider, hBox));
+        right.child(sliderRow("S:", sSlider, sBox));
+        right.child(sliderRow("V:", vSlider, vBox));
+        right.child(sliderRow("R:", rSlider, rBox));
+        right.child(sliderRow("G:", gSlider, gBox));
+        right.child(sliderRow("B:", bSlider, bBox));
+        right.child(sliderRow("A:", aSlider, aBox));
 
         // HEX input row.
         FlowLayout hexRow = UIContainers.horizontalFlow(
             Sizing.fill(100),
             Sizing.content()
         );
-        hexRow.gap(4).verticalAlignment(VerticalAlignment.CENTER).margins(Insets.top(2));
+        hexRow.gap(4).verticalAlignment(VerticalAlignment.CENTER);
         hexRow.child(
             UIComponents.label(Component.literal("HEX:")).horizontalSizing(Sizing.fixed(32))
         );
         hexBox = UIComponents.textBox(Sizing.fill(100));
         hexBox.setValue(toHex());
-        hexBox.setFilter(s -> s.matches("[0-9a-fA-F]{0,6}"));
+        hexBox.setFilter(s -> s.matches("[0-9a-fA-F]{0,8}"));
         hexBox.setResponder(t -> {
             if (updating) return;
-            if (t.length() == 6 && t.matches("[0-9a-fA-F]{6}")) {
-                applyHex(t);
-                refresh();
-            }
+            if (t.length() == 6 && t.matches("[0-9a-fA-F]{6}")) { applyHex(t); refresh(); }
+            else if (t.length() == 8 && t.matches("[0-9a-fA-F]{8}")) { applyArgb(t); refresh(); }
         });
         hexRow.child(hexBox);
-        panel.child(hexRow);
+        right.child(hexRow.margins(Insets.top(4)));
 
-        // Action row.
-        FlowLayout actionRow = UIContainers.horizontalFlow(
+        // Confirm button at the bottom right.
+        FlowLayout confirmRow = UIContainers.horizontalFlow(
             Sizing.fill(100),
             Sizing.content()
         );
-        actionRow.gap(4).margins(Insets.top(6));
-
-        var defaultBtn = UIComponents.button(Component.literal("§7Default"), b ->
-            onColorSelected.accept(null));
-        defaultBtn.horizontalSizing(Sizing.fill(25));
-
-        var useBtn = UIComponents.button(
-            Component.literal("§a✔  Use This Color"),
-            b -> onColorSelected.accept(toHex())
+        confirmRow.horizontalAlignment(HorizontalAlignment.RIGHT);
+        var confirmBtn = UIComponents.button(
+            Component.literal("✔ 确认"),
+            b -> onColorSelected.accept(rgbHex())
         );
-        useBtn.horizontalSizing(Sizing.fill(37));
+        confirmBtn.horizontalSizing(Sizing.fixed(90));
+        confirmRow.child(confirmBtn.margins(Insets.top(6)));
+        right.child(confirmRow);
 
-        var cancelBtn = UIComponents.button(
-            Component.literal("§c✖  Cancel"),
-            b -> onCancel.run()
-        );
-        cancelBtn.horizontalSizing(Sizing.fill(37));
-
-        actionRow.child(defaultBtn).child(useBtn).child(cancelBtn);
-        panel.child(actionRow);
+        body.child(left).child(right);
+        panel.child(body);
 
         root.child(panel);
         refresh();
@@ -208,36 +213,40 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
         refresh();
     }
 
-    /** Push the current HSV state into every control. */
+    /** Push the current color state into every control. */
     private void refresh() {
         updating = true;
-        hSlider.value(h);
-        sSlider.value(s);
-        vSlider.value(v);
         int[] rgb = hsvToRgb(h, s, v);
-        rSlider.value(rgb[0] / 255f);
-        gSlider.value(rgb[1] / 255f);
-        bSlider.value(rgb[2] / 255f);
+        hSlider.setValue(h);
+        sSlider.setValue(s);
+        vSlider.setValue(v);
+        rSlider.setValue(rgb[0] / 255f);
+        gSlider.setValue(rgb[1] / 255f);
+        bSlider.setValue(rgb[2] / 255f);
+        aSlider.setValue(a);
+        // S/V slider gradients follow the current hue.
+        int pure = 0xFF000000 | pack(rgb);
+        sSlider.setColors(new int[] { 0xFFFFFFFF, pure });
+        vSlider.setColors(new int[] { 0xFF000000, pure });
         hBox.setValue(String.valueOf((int) (h * 360)));
         sBox.setValue(String.valueOf((int) (s * 100)));
         vBox.setValue(String.valueOf((int) (v * 100)));
         rBox.setValue(String.valueOf(rgb[0]));
         gBox.setValue(String.valueOf(rgb[1]));
         bBox.setValue(String.valueOf(rgb[2]));
+        aBox.setValue(String.valueOf((int) (a * 255)));
         hexBox.setValue(toHex());
-        previewBox.color(Color.ofArgb(0xFF000000 | rgbInt()));
-        hexValueLabel.text(Component.literal("#" + toHex()).withStyle(ChatFormatting.BOLD));
+        previewBox.color(Color.ofArgb(((int) (a * 255) << 24) | rgbInt()));
         svCanvas.setHue(h);
         svCanvas.setSelection(s, v);
         hueBar.setHue(h);
         updating = false;
     }
 
-    private SliderComponent slider(double value) {
-        SliderComponent slider = UIComponents.slider(Sizing.fill(100));
-        slider.value(value);
-        slider.scrollStep(0.01);
-        slider.message(v -> Component.literal(""));
+    private GradientSlider gradSlider(int[] colors, Consumer<Double> onChanged) {
+        GradientSlider slider = new GradientSlider(colors, onChanged);
+        slider.horizontalSizing(Sizing.fill(100));
+        slider.verticalSizing(Sizing.fixed(12));
         return slider;
     }
 
@@ -247,16 +256,16 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
         return box;
     }
 
-    private FlowLayout sliderRow(String label, SliderComponent slider, TextBoxComponent box) {
+    private FlowLayout sliderRow(String label, GradientSlider slider, TextBoxComponent box) {
         FlowLayout row = UIContainers.horizontalFlow(
             Sizing.fill(100),
             Sizing.content()
         );
         row.gap(4).verticalAlignment(VerticalAlignment.CENTER);
         row.child(
-            UIComponents.label(Component.literal(label)).horizontalSizing(Sizing.fixed(20))
+            UIComponents.label(Component.literal(label)).horizontalSizing(Sizing.fixed(16))
         );
-        row.child(slider.horizontalSizing(Sizing.fill(100)));
+        row.child(slider);
         row.child(box);
         return row;
     }
@@ -272,8 +281,12 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
         return (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
     }
 
-    private String toHex() {
+    private String rgbHex() {
         return String.format("%06X", rgbInt());
+    }
+
+    private String toHex() {
+        return String.format("%02X%06X", (int) (a * 255), rgbInt());
     }
 
     private void fromRgb(int r, int g, int b) {
@@ -291,6 +304,14 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
         try {
             int rgb = Integer.parseInt(hex, 16);
             fromRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
+        } catch (Exception ignored) {}
+    }
+
+    private void applyArgb(String hex) {
+        try {
+            int argb = (int) Long.parseLong(hex, 16);
+            a = ((argb >> 24) & 0xFF) / 255f;
+            fromRgb((argb >> 16) & 0xFF, (argb >> 8) & 0xFF, argb & 0xFF);
         } catch (Exception ignored) {}
     }
 
@@ -341,7 +362,7 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
 
         @Override
         public void draw(OwoUIGraphics ctx, int mouseX, int mouseY, float partialTicks, float delta) {
-            int segments = 20;
+            int segments = 24;
             for (int i = 0; i < segments; i++) {
                 float s = i / (float) segments;
                 int top = 0xFF000000 | pack(hsvToRgb(hue, s, 1f));
@@ -350,11 +371,13 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
                 int x2 = x() + (i + 1) * width() / segments;
                 ctx.drawGradientRect(x1, y(), x2, y() + height(), top, top, bottom, bottom);
             }
-            // selection marker
+            // Cross-hair marker (white with dark shadow).
             int cx = x() + (int) (sat * width());
             int cy = y() + (int) ((1f - val) * height());
-            ctx.drawCircle(cx, cy, 4, 1.2, Color.WHITE);
-            ctx.drawCircle(cx, cy, 4, 0.6, Color.BLACK);
+            ctx.drawRectOutline(x(), cy + 1, x() + width(), cy + 2, 1);
+            ctx.drawRectOutline(cx + 1, y(), cx + 2, y() + height(), 1);
+            ctx.drawRectOutline(x(), cy - 1, x() + width(), cy, 1);
+            ctx.drawRectOutline(cx - 1, y(), cx, y() + height(), 1);
         }
 
         @Override
@@ -391,15 +414,15 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
             int segments = 24;
             for (int i = 0; i < segments; i++) {
                 float h1 = i / (float) segments;
-                float h2 = (i + 1) / (float) segments;
                 int color = 0xFF000000 | pack(hsvToRgb(h1, 1f, 1f));
                 int y1 = y() + i * height() / segments;
                 int y2 = y() + (i + 1) * height() / segments;
                 ctx.drawGradientRect(x(), y1, x() + width(), y2, color, color, color, color);
             }
-            // selection marker: horizontal ticks at current hue
+            // Horizontal tick at current hue (white with dark shadow).
             int cy = y() + (int) (hue * height());
-            ctx.drawRectOutline(x(), cy - 2, x() + width(), cy + 2, 1);
+            ctx.drawRectOutline(x(), cy + 1, x() + width(), cy + 2, 1);
+            ctx.drawRectOutline(x(), cy - 1, x() + width(), cy, 1);
         }
 
         @Override
@@ -418,6 +441,61 @@ public class ColorPickerScreen extends BaseOwoScreen<FlowLayout> {
             if (height() <= 0) return;
             hue = (float) Math.min(1, Math.max(0, (my - y()) / height()));
             if (onPick != null) onPick.accept(hue);
+        }
+    }
+
+    /** Horizontal gradient slider: gradient track + draggable handle. */
+    public static class GradientSlider extends BaseUIComponent {
+        private double value = 0; // 0..1
+        private int[] colors = { 0xFFFFFFFF, 0xFF000000 };
+        private final Consumer<Double> onChanged;
+
+        GradientSlider(int[] colors, Consumer<Double> onChanged) {
+            this.colors = colors;
+            this.onChanged = onChanged;
+        }
+
+        void setValue(double v) { value = Math.min(1, Math.max(0, v)); }
+        void setColors(int[] colors) { this.colors = colors; }
+
+        @Override
+        public void draw(OwoUIGraphics ctx, int mouseX, int mouseY, float partialTicks, float delta) {
+            if (width() <= 0 || height() <= 0) return;
+            int n = colors.length;
+            if (n >= 2) {
+                for (int i = 0; i < n - 1; i++) {
+                    int x1 = x() + i * width() / (n - 1);
+                    int x2 = x() + (i + 1) * width() / (n - 1);
+                    ctx.drawGradientRect(x1, y(), x2, y() + height(),
+                        colors[i], colors[i + 1], colors[i], colors[i + 1]);
+                }
+            } else {
+                ctx.drawGradientRect(x(), y(), x() + width(), y() + height(),
+                    colors[0], colors[0], colors[0], colors[0]);
+            }
+            ctx.drawRectOutline(x(), y(), x() + width(), y() + height(), 1);
+            // Handle: white line with dark shadow.
+            int hx = x() + (int) (value * (width() - 1));
+            ctx.drawRectOutline(hx - 1, y() - 1, hx + 2, y() + height() + 1, 1);
+            ctx.drawRectOutline(hx - 2, y() - 2, hx + 1, y() + height(), 1);
+        }
+
+        @Override
+        public boolean onMouseDown(MouseButtonEvent event, boolean doubled) {
+            if (event.button() == 0) { pick(event.x()); return true; }
+            return super.onMouseDown(event, doubled);
+        }
+
+        @Override
+        public boolean onMouseDrag(MouseButtonEvent event, double dragX, double dragY) {
+            if (event.button() == 0) { pick(event.x()); return true; }
+            return super.onMouseDrag(event, dragX, dragY);
+        }
+
+        private void pick(double mx) {
+            if (width() <= 0) return;
+            value = Math.min(1, Math.max(0, (mx - x()) / width()));
+            if (onChanged != null) onChanged.accept(value);
         }
     }
 
