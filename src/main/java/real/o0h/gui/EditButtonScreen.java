@@ -139,7 +139,6 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
         panel.child(titleWrap);
 
         FlowLayout nameCard = card();
-        nameCard.child(cardHeader("Name"));
 
         // 3.4-style name field: dark strip + top hairline, borderless text.
         FlowLayout nameStrip = UIContainers.horizontalFlow(
@@ -165,7 +164,6 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
         panel.child(nameCard);
 
         FlowLayout appearCard = card();
-        appearCard.child(cardHeader("Appearance"));
 
         FlowLayout colorIconRow = UIContainers.horizontalFlow(
             Sizing.fill(100),
@@ -215,16 +213,12 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
             Sizing.fill(100),
             Sizing.content()
         );
-        // Command list scrolls independently with a visible scrollbar, like 3.4.
-        int listH = Math.max(90,
-            Minecraft.getInstance().getWindow().getGuiScaledHeight() - 240);
+        // Compact command list area: fits ~3 rows on screen, no big scrollbar.
         var scroll = UIContainers.verticalScroll(
             Sizing.fill(100),
-            Sizing.fixed(listH),
+            Sizing.fixed(84),
             commandListLayout
         );
-        scroll.scrollbar(ScrollContainer.Scrollbar.vanillaFlat());
-        scroll.scrollbarThiccness(5);
         scroll.margins(Insets.bottom(6));
         actionsCard.child(scroll);
 
