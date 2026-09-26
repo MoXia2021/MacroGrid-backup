@@ -1,0 +1,724 @@
+﻿Compiled from "FlowLayout.java"
+public interface io.wispforest.owo.ui.container.FlowLayout$Algorithm {
+  public static final io.wispforest.owo.ui.container.FlowLayout$Algorithm HORIZONTAL;
+
+  public static final io.wispforest.owo.ui.container.FlowLayout$Algorithm VERTICAL;
+
+  public static final io.wispforest.owo.ui.container.FlowLayout$Algorithm LTR_TEXT;
+
+  public abstract void layout(io.wispforest.owo.ui.container.FlowLayout);
+
+  private static void lambda$static$6(io.wispforest.owo.ui.container.FlowLayout);
+    Code:
+         0: aload_0
+         1: invokestatic  #1                  // Method io/wispforest/owo/ui/container/FlowLayout.access$2000:(Lio/wispforest/owo/ui/container/FlowLayout;)Lio/wispforest/owo/ui/core/AnimatableProperty;
+         4: invokevirtual #7                  // Method io/wispforest/owo/ui/core/AnimatableProperty.get:()Ljava/lang/Object;
+         7: checkcast     #13                 // class io/wispforest/owo/ui/core/Sizing
+        10: invokevirtual #15                 // Method io/wispforest/owo/ui/core/Sizing.isContent:()Z
+        13: ifeq          26
+        16: new           #19                 // class java/lang/IllegalStateException
+        19: dup
+        20: ldc           #21                 // String An LTR-text-flow layout must use content-independent horizontal sizing
+        22: invokespecial #23                 // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+        25: athrow
+        26: new           #27                 // class org/apache/commons/lang3/mutable/MutableInt
+        29: dup
+        30: iconst_0
+        31: invokespecial #29                 // Method org/apache/commons/lang3/mutable/MutableInt."<init>":(I)V
+        34: astore_1
+        35: new           #27                 // class org/apache/commons/lang3/mutable/MutableInt
+        38: dup
+        39: iconst_0
+        40: invokespecial #29                 // Method org/apache/commons/lang3/mutable/MutableInt."<init>":(I)V
+        43: astore_2
+        44: new           #27                 // class org/apache/commons/lang3/mutable/MutableInt
+        47: dup
+        48: iconst_0
+        49: invokespecial #29                 // Method org/apache/commons/lang3/mutable/MutableInt."<init>":(I)V
+        52: astore_3
+        53: new           #27                 // class org/apache/commons/lang3/mutable/MutableInt
+        56: dup
+        57: iconst_0
+        58: invokespecial #29                 // Method org/apache/commons/lang3/mutable/MutableInt."<init>":(I)V
+        61: astore        4
+        63: new           #32                 // class java/util/ArrayList
+        66: dup
+        67: invokespecial #34                 // Method java/util/ArrayList."<init>":()V
+        70: astore        5
+        72: aload_0
+        73: invokestatic  #37                 // Method io/wispforest/owo/ui/container/FlowLayout.access$2100:(Lio/wispforest/owo/ui/container/FlowLayout;)Lio/wispforest/owo/ui/core/AnimatableProperty;
+        76: invokevirtual #7                  // Method io/wispforest/owo/ui/core/AnimatableProperty.get:()Ljava/lang/Object;
+        79: checkcast     #40                 // class io/wispforest/owo/ui/core/Insets
+        82: astore        6
+        84: aload_0
+        85: aload_0
+        86: invokestatic  #42                 // Method io/wispforest/owo/ui/container/FlowLayout.access$2200:(Lio/wispforest/owo/ui/container/FlowLayout;)Lio/wispforest/owo/ui/core/Size;
+        89: invokestatic  #46                 // Method io/wispforest/owo/ui/container/FlowLayout.access$2300:(Lio/wispforest/owo/ui/container/FlowLayout;Lio/wispforest/owo/ui/core/Size;)Lio/wispforest/owo/ui/core/Size;
+        92: astore        7
+        94: aload_0
+        95: getfield      #50                 // Field io/wispforest/owo/ui/container/FlowLayout.children:Ljava/util/List;
+        98: aload         7
+       100: invokedynamic #54,  0             // InvokeDynamic #0:accept:(Lio/wispforest/owo/ui/core/Size;)Ljava/util/function/Consumer;
+       105: invokeinterface #58,  2           // InterfaceMethod java/util/List.forEach:(Ljava/util/function/Consumer;)V
+       110: aload_0
+       111: dup
+       112: invokestatic  #64                 // Method java/util/Objects.requireNonNull:(Ljava/lang/Object;)Ljava/lang/Object;
+       115: pop
+       116: astore        9
+       118: aload         9
+       120: invokedynamic #70,  0             // InvokeDynamic #1:accept:(Lio/wispforest/owo/ui/container/FlowLayout;)Lio/wispforest/owo/ui/util/MountingHelper$ComponentSink;
+       125: aload_0
+       126: getfield      #50                 // Field io/wispforest/owo/ui/container/FlowLayout.children:Ljava/util/List;
+       129: aload         5
+       131: aload_0
+       132: aload         6
+       134: aload_3
+       135: aload         4
+       137: aload         7
+       139: aload_2
+       140: aload_1
+       141: invokedynamic #73,  0             // InvokeDynamic #2:accept:(Ljava/util/ArrayList;Lio/wispforest/owo/ui/container/FlowLayout;Lio/wispforest/owo/ui/core/Insets;Lorg/apache/commons/lang3/mutable/MutableInt;Lorg/apache/commons/lang3/mutable/MutableInt;Lio/wispforest/owo/ui/core/Size;Lorg/apache/commons/lang3/mutable/MutableInt;Lorg/apache/commons/lang3/mutable/MutableInt;)Ljava/util/function/Consumer;
+       146: invokestatic  #76                 // Method io/wispforest/owo/ui/util/MountingHelper.mountEarly:(Lio/wispforest/owo/ui/util/MountingHelper$ComponentSink;Ljava/util/List;Ljava/util/function/Consumer;)Lio/wispforest/owo/ui/util/MountingHelper;
+       149: astore        8
+       151: aload_1
+       152: aload_0
+       153: invokevirtual #82                 // Method io/wispforest/owo/ui/container/FlowLayout.gap:()I
+       156: invokevirtual #86                 // Method org/apache/commons/lang3/mutable/MutableInt.subtract:(I)V
+       159: aload_0
+       160: aload_1
+       161: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+       164: aload_2
+       165: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+       168: invokestatic  #92                 // Method io/wispforest/owo/ui/core/Size.of:(II)Lio/wispforest/owo/ui/core/Size;
+       171: putfield      #98                 // Field io/wispforest/owo/ui/container/FlowLayout.contentSize:Lio/wispforest/owo/ui/core/Size;
+       174: aload_0
+       175: invokestatic  #102                // Method io/wispforest/owo/ui/container/FlowLayout.access$2700:(Lio/wispforest/owo/ui/container/FlowLayout;)V
+       178: aload_0
+       179: invokevirtual #106                // Method io/wispforest/owo/ui/container/FlowLayout.verticalAlignment:()Lio/wispforest/owo/ui/core/VerticalAlignment;
+       182: getstatic     #110                // Field io/wispforest/owo/ui/core/VerticalAlignment.TOP:Lio/wispforest/owo/ui/core/VerticalAlignment;
+       185: if_acmpeq     256
+       188: aload         5
+       190: invokevirtual #116                // Method java/util/ArrayList.iterator:()Ljava/util/Iterator;
+       193: astore        9
+       195: aload         9
+       197: invokeinterface #120,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+       202: ifeq          256
+       205: aload         9
+       207: invokeinterface #125,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+       212: checkcast     #128                // class io/wispforest/owo/ui/core/UIComponent
+       215: astore        10
+       217: aload         10
+       219: aload         10
+       221: invokeinterface #130,  1          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.baseY:()I
+       226: aload_0
+       227: invokevirtual #106                // Method io/wispforest/owo/ui/container/FlowLayout.verticalAlignment:()Lio/wispforest/owo/ui/core/VerticalAlignment;
+       230: aload_2
+       231: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+       234: aload_0
+       235: invokestatic  #133                // Method io/wispforest/owo/ui/container/FlowLayout.access$2800:(Lio/wispforest/owo/ui/container/FlowLayout;)I
+       238: aload         6
+       240: invokevirtual #137                // Method io/wispforest/owo/ui/core/Insets.vertical:()I
+       243: isub
+       244: invokevirtual #140                // Method io/wispforest/owo/ui/core/VerticalAlignment.align:(II)I
+       247: iadd
+       248: invokeinterface #144,  2          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.updateY:(I)V
+       253: goto          195
+       256: aload_0
+       257: invokevirtual #147                // Method io/wispforest/owo/ui/container/FlowLayout.horizontalAlignment:()Lio/wispforest/owo/ui/core/HorizontalAlignment;
+       260: getstatic     #151                // Field io/wispforest/owo/ui/core/HorizontalAlignment.LEFT:Lio/wispforest/owo/ui/core/HorizontalAlignment;
+       263: if_acmpeq     373
+       266: aload         5
+       268: invokevirtual #116                // Method java/util/ArrayList.iterator:()Ljava/util/Iterator;
+       271: astore        9
+       273: aload         9
+       275: invokeinterface #120,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+       280: ifeq          373
+       283: aload         9
+       285: invokeinterface #125,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+       290: checkcast     #128                // class io/wispforest/owo/ui/core/UIComponent
+       293: astore        10
+       295: aload_0
+       296: invokevirtual #147                // Method io/wispforest/owo/ui/container/FlowLayout.horizontalAlignment:()Lio/wispforest/owo/ui/core/HorizontalAlignment;
+       299: getstatic     #157                // Field io/wispforest/owo/ui/core/HorizontalAlignment.CENTER:Lio/wispforest/owo/ui/core/HorizontalAlignment;
+       302: if_acmpne     340
+       305: aload         10
+       307: aload         10
+       309: invokeinterface #160,  1          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.baseX:()I
+       314: aload_0
+       315: invokestatic  #163                // Method io/wispforest/owo/ui/container/FlowLayout.access$2900:(Lio/wispforest/owo/ui/container/FlowLayout;)I
+       318: aload         6
+       320: invokevirtual #166                // Method io/wispforest/owo/ui/core/Insets.horizontal:()I
+       323: isub
+       324: aload_1
+       325: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+       328: isub
+       329: iconst_2
+       330: idiv
+       331: iadd
+       332: invokeinterface #169,  2          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.updateX:(I)V
+       337: goto          370
+       340: aload         10
+       342: aload         10
+       344: invokeinterface #160,  1          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.baseX:()I
+       349: aload_0
+       350: invokestatic  #172                // Method io/wispforest/owo/ui/container/FlowLayout.access$3000:(Lio/wispforest/owo/ui/container/FlowLayout;)I
+       353: aload         6
+       355: invokevirtual #166                // Method io/wispforest/owo/ui/core/Insets.horizontal:()I
+       358: isub
+       359: aload_1
+       360: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+       363: isub
+       364: iadd
+       365: invokeinterface #169,  2          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.updateX:(I)V
+       370: goto          273
+       373: aload         8
+       375: invokevirtual #175                // Method io/wispforest/owo/ui/util/MountingHelper.mountLate:()V
+       378: return
+
+  private static void lambda$static$9(java.util.ArrayList, io.wispforest.owo.ui.container.FlowLayout, io.wispforest.owo.ui.core.Insets, org.apache.commons.lang3.mutable.MutableInt, org.apache.commons.lang3.mutable.MutableInt, io.wispforest.owo.ui.core.Size, org.apache.commons.lang3.mutable.MutableInt, org.apache.commons.lang3.mutable.MutableInt, io.wispforest.owo.ui.core.UIComponent);
+    Code:
+         0: aload_0
+         1: aload         8
+         3: invokevirtual #178                // Method java/util/ArrayList.add:(Ljava/lang/Object;)Z
+         6: pop
+         7: aload_1
+         8: invokestatic  #182                // Method io/wispforest/owo/ui/container/FlowLayout.access$2500:(Lio/wispforest/owo/ui/container/FlowLayout;)I
+        11: aload_2
+        12: invokevirtual #185                // Method io/wispforest/owo/ui/core/Insets.left:()I
+        15: iadd
+        16: aload         8
+        18: invokeinterface #188,  1          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.margins:()Lio/wispforest/owo/ui/core/AnimatableProperty;
+        23: invokevirtual #7                  // Method io/wispforest/owo/ui/core/AnimatableProperty.get:()Ljava/lang/Object;
+        26: checkcast     #40                 // class io/wispforest/owo/ui/core/Insets
+        29: invokevirtual #185                // Method io/wispforest/owo/ui/core/Insets.left:()I
+        32: iadd
+        33: aload_3
+        34: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+        37: iadd
+        38: istore        9
+        40: aload_1
+        41: invokestatic  #192                // Method io/wispforest/owo/ui/container/FlowLayout.access$2600:(Lio/wispforest/owo/ui/container/FlowLayout;)I
+        44: aload_2
+        45: invokevirtual #195                // Method io/wispforest/owo/ui/core/Insets.top:()I
+        48: iadd
+        49: aload         8
+        51: invokeinterface #188,  1          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.margins:()Lio/wispforest/owo/ui/core/AnimatableProperty;
+        56: invokevirtual #7                  // Method io/wispforest/owo/ui/core/AnimatableProperty.get:()Ljava/lang/Object;
+        59: checkcast     #40                 // class io/wispforest/owo/ui/core/Insets
+        62: invokevirtual #195                // Method io/wispforest/owo/ui/core/Insets.top:()I
+        65: iadd
+        66: aload         4
+        68: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+        71: iadd
+        72: istore        10
+        74: aload         8
+        76: invokeinterface #198,  1          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.fullSize:()Lio/wispforest/owo/ui/core/Size;
+        81: astore        11
+        83: aload_3
+        84: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+        87: aload         11
+        89: invokevirtual #202                // Method io/wispforest/owo/ui/core/Size.width:()I
+        92: iadd
+        93: aload         5
+        95: invokevirtual #202                // Method io/wispforest/owo/ui/core/Size.width:()I
+        98: if_icmple     138
+       101: iload         9
+       103: aload_3
+       104: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+       107: isub
+       108: istore        9
+       110: iload         10
+       112: aload         4
+       114: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+       117: isub
+       118: aload         6
+       120: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+       123: iadd
+       124: istore        10
+       126: aload         4
+       128: aload         6
+       130: invokevirtual #205                // Method org/apache/commons/lang3/mutable/MutableInt.setValue:(Ljava/lang/Number;)V
+       133: aload_3
+       134: iconst_0
+       135: invokevirtual #209                // Method org/apache/commons/lang3/mutable/MutableInt.setValue:(I)V
+       138: aload         8
+       140: aload_1
+       141: iload         9
+       143: iload         10
+       145: invokeinterface #211,  4          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.mount:(Lio/wispforest/owo/ui/core/ParentUIComponent;II)V
+       150: aload_3
+       151: aload         11
+       153: invokevirtual #202                // Method io/wispforest/owo/ui/core/Size.width:()I
+       156: aload_1
+       157: invokevirtual #82                 // Method io/wispforest/owo/ui/container/FlowLayout.gap:()I
+       160: iadd
+       161: invokevirtual #215                // Method org/apache/commons/lang3/mutable/MutableInt.add:(I)V
+       164: aload         4
+       166: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+       169: aload         11
+       171: invokevirtual #217                // Method io/wispforest/owo/ui/core/Size.height:()I
+       174: iadd
+       175: aload         6
+       177: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+       180: if_icmple     199
+       183: aload         6
+       185: aload         4
+       187: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+       190: aload         11
+       192: invokevirtual #217                // Method io/wispforest/owo/ui/core/Size.height:()I
+       195: iadd
+       196: invokevirtual #209                // Method org/apache/commons/lang3/mutable/MutableInt.setValue:(I)V
+       199: aload_3
+       200: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+       203: aload         7
+       205: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+       208: if_icmple     220
+       211: aload         7
+       213: aload_3
+       214: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+       217: invokevirtual #209                // Method org/apache/commons/lang3/mutable/MutableInt.setValue:(I)V
+       220: return
+
+  private static void lambda$static$8(io.wispforest.owo.ui.container.FlowLayout, io.wispforest.owo.ui.core.UIComponent, java.util.function.Consumer);
+    Code:
+         0: aload_0
+         1: aload_1
+         2: aload_2
+         3: invokestatic  #220                // Method io/wispforest/owo/ui/container/FlowLayout.access$2400:(Lio/wispforest/owo/ui/container/FlowLayout;Lio/wispforest/owo/ui/core/UIComponent;Ljava/util/function/Consumer;)V
+         6: return
+
+  private static void lambda$static$7(io.wispforest.owo.ui.core.Size, io.wispforest.owo.ui.core.UIComponent);
+    Code:
+         0: aload_1
+         1: aload_0
+         2: invokeinterface #224,  2          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.inflate:(Lio/wispforest/owo/ui/core/Size;)V
+         7: return
+
+  private static void lambda$static$3(io.wispforest.owo.ui.container.FlowLayout);
+    Code:
+         0: new           #27                 // class org/apache/commons/lang3/mutable/MutableInt
+         3: dup
+         4: iconst_0
+         5: invokespecial #29                 // Method org/apache/commons/lang3/mutable/MutableInt."<init>":(I)V
+         8: astore_1
+         9: new           #27                 // class org/apache/commons/lang3/mutable/MutableInt
+        12: dup
+        13: iconst_0
+        14: invokespecial #29                 // Method org/apache/commons/lang3/mutable/MutableInt."<init>":(I)V
+        17: astore_2
+        18: new           #32                 // class java/util/ArrayList
+        21: dup
+        22: invokespecial #34                 // Method java/util/ArrayList."<init>":()V
+        25: astore_3
+        26: aload_0
+        27: invokestatic  #228                // Method io/wispforest/owo/ui/container/FlowLayout.access$1000:(Lio/wispforest/owo/ui/container/FlowLayout;)Lio/wispforest/owo/ui/core/AnimatableProperty;
+        30: invokevirtual #7                  // Method io/wispforest/owo/ui/core/AnimatableProperty.get:()Ljava/lang/Object;
+        33: checkcast     #40                 // class io/wispforest/owo/ui/core/Insets
+        36: astore        4
+        38: aload_0
+        39: aload_0
+        40: invokestatic  #231                // Method io/wispforest/owo/ui/container/FlowLayout.access$1100:(Lio/wispforest/owo/ui/container/FlowLayout;)Lio/wispforest/owo/ui/core/Size;
+        43: invokestatic  #234                // Method io/wispforest/owo/ui/container/FlowLayout.access$1200:(Lio/wispforest/owo/ui/container/FlowLayout;Lio/wispforest/owo/ui/core/Size;)Lio/wispforest/owo/ui/core/Size;
+        46: astore        5
+        48: aload_0
+        49: getfield      #50                 // Field io/wispforest/owo/ui/container/FlowLayout.children:Ljava/util/List;
+        52: aload         5
+        54: iconst_1
+        55: aload_0
+        56: invokevirtual #82                 // Method io/wispforest/owo/ui/container/FlowLayout.gap:()I
+        59: invokestatic  #237                // Method io/wispforest/owo/ui/util/MountingHelper.inflateWithExpand:(Ljava/util/List;Lio/wispforest/owo/ui/core/Size;ZI)V
+        62: aload_0
+        63: dup
+        64: invokestatic  #64                 // Method java/util/Objects.requireNonNull:(Ljava/lang/Object;)Ljava/lang/Object;
+        67: pop
+        68: astore        7
+        70: aload         7
+        72: invokedynamic #241,  0            // InvokeDynamic #3:accept:(Lio/wispforest/owo/ui/container/FlowLayout;)Lio/wispforest/owo/ui/util/MountingHelper$ComponentSink;
+        77: aload_0
+        78: getfield      #50                 // Field io/wispforest/owo/ui/container/FlowLayout.children:Ljava/util/List;
+        81: aload_3
+        82: aload_0
+        83: aload         4
+        85: aload_1
+        86: aload_2
+        87: invokedynamic #242,  0            // InvokeDynamic #4:accept:(Ljava/util/ArrayList;Lio/wispforest/owo/ui/container/FlowLayout;Lio/wispforest/owo/ui/core/Insets;Lorg/apache/commons/lang3/mutable/MutableInt;Lorg/apache/commons/lang3/mutable/MutableInt;)Ljava/util/function/Consumer;
+        92: invokestatic  #76                 // Method io/wispforest/owo/ui/util/MountingHelper.mountEarly:(Lio/wispforest/owo/ui/util/MountingHelper$ComponentSink;Ljava/util/List;Ljava/util/function/Consumer;)Lio/wispforest/owo/ui/util/MountingHelper;
+        95: astore        6
+        97: aload_1
+        98: aload_0
+        99: invokevirtual #82                 // Method io/wispforest/owo/ui/container/FlowLayout.gap:()I
+       102: invokevirtual #86                 // Method org/apache/commons/lang3/mutable/MutableInt.subtract:(I)V
+       105: aload_0
+       106: aload_2
+       107: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+       110: aload_1
+       111: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+       114: invokestatic  #92                 // Method io/wispforest/owo/ui/core/Size.of:(II)Lio/wispforest/owo/ui/core/Size;
+       117: putfield      #98                 // Field io/wispforest/owo/ui/container/FlowLayout.contentSize:Lio/wispforest/owo/ui/core/Size;
+       120: aload_0
+       121: invokestatic  #245                // Method io/wispforest/owo/ui/container/FlowLayout.access$1600:(Lio/wispforest/owo/ui/container/FlowLayout;)V
+       124: aload_0
+       125: invokevirtual #147                // Method io/wispforest/owo/ui/container/FlowLayout.horizontalAlignment:()Lio/wispforest/owo/ui/core/HorizontalAlignment;
+       128: getstatic     #151                // Field io/wispforest/owo/ui/core/HorizontalAlignment.LEFT:Lio/wispforest/owo/ui/core/HorizontalAlignment;
+       131: if_acmpeq     207
+       134: aload_3
+       135: invokevirtual #116                // Method java/util/ArrayList.iterator:()Ljava/util/Iterator;
+       138: astore        7
+       140: aload         7
+       142: invokeinterface #120,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+       147: ifeq          207
+       150: aload         7
+       152: invokeinterface #125,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+       157: checkcast     #128                // class io/wispforest/owo/ui/core/UIComponent
+       160: astore        8
+       162: aload         8
+       164: aload         8
+       166: invokeinterface #160,  1          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.baseX:()I
+       171: aload_0
+       172: invokevirtual #147                // Method io/wispforest/owo/ui/container/FlowLayout.horizontalAlignment:()Lio/wispforest/owo/ui/core/HorizontalAlignment;
+       175: aload         8
+       177: invokeinterface #198,  1          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.fullSize:()Lio/wispforest/owo/ui/core/Size;
+       182: invokevirtual #202                // Method io/wispforest/owo/ui/core/Size.width:()I
+       185: aload_0
+       186: invokestatic  #248                // Method io/wispforest/owo/ui/container/FlowLayout.access$1700:(Lio/wispforest/owo/ui/container/FlowLayout;)I
+       189: aload         4
+       191: invokevirtual #166                // Method io/wispforest/owo/ui/core/Insets.horizontal:()I
+       194: isub
+       195: invokevirtual #251                // Method io/wispforest/owo/ui/core/HorizontalAlignment.align:(II)I
+       198: iadd
+       199: invokeinterface #169,  2          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.updateX:(I)V
+       204: goto          140
+       207: aload_0
+       208: invokevirtual #106                // Method io/wispforest/owo/ui/container/FlowLayout.verticalAlignment:()Lio/wispforest/owo/ui/core/VerticalAlignment;
+       211: getstatic     #110                // Field io/wispforest/owo/ui/core/VerticalAlignment.TOP:Lio/wispforest/owo/ui/core/VerticalAlignment;
+       214: if_acmpeq     323
+       217: aload_3
+       218: invokevirtual #116                // Method java/util/ArrayList.iterator:()Ljava/util/Iterator;
+       221: astore        7
+       223: aload         7
+       225: invokeinterface #120,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+       230: ifeq          323
+       233: aload         7
+       235: invokeinterface #125,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+       240: checkcast     #128                // class io/wispforest/owo/ui/core/UIComponent
+       243: astore        8
+       245: aload_0
+       246: invokevirtual #106                // Method io/wispforest/owo/ui/container/FlowLayout.verticalAlignment:()Lio/wispforest/owo/ui/core/VerticalAlignment;
+       249: getstatic     #252                // Field io/wispforest/owo/ui/core/VerticalAlignment.CENTER:Lio/wispforest/owo/ui/core/VerticalAlignment;
+       252: if_acmpne     290
+       255: aload         8
+       257: aload         8
+       259: invokeinterface #130,  1          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.baseY:()I
+       264: aload_0
+       265: invokestatic  #254                // Method io/wispforest/owo/ui/container/FlowLayout.access$1800:(Lio/wispforest/owo/ui/container/FlowLayout;)I
+       268: aload         4
+       270: invokevirtual #137                // Method io/wispforest/owo/ui/core/Insets.vertical:()I
+       273: isub
+       274: aload_1
+       275: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+       278: isub
+       279: iconst_2
+       280: idiv
+       281: iadd
+       282: invokeinterface #144,  2          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.updateY:(I)V
+       287: goto          320
+       290: aload         8
+       292: aload         8
+       294: invokeinterface #130,  1          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.baseY:()I
+       299: aload_0
+       300: invokestatic  #257                // Method io/wispforest/owo/ui/container/FlowLayout.access$1900:(Lio/wispforest/owo/ui/container/FlowLayout;)I
+       303: aload         4
+       305: invokevirtual #137                // Method io/wispforest/owo/ui/core/Insets.vertical:()I
+       308: isub
+       309: aload_1
+       310: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+       313: isub
+       314: iadd
+       315: invokeinterface #144,  2          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.updateY:(I)V
+       320: goto          223
+       323: aload         6
+       325: invokevirtual #175                // Method io/wispforest/owo/ui/util/MountingHelper.mountLate:()V
+       328: return
+
+  private static void lambda$static$5(java.util.ArrayList, io.wispforest.owo.ui.container.FlowLayout, io.wispforest.owo.ui.core.Insets, org.apache.commons.lang3.mutable.MutableInt, org.apache.commons.lang3.mutable.MutableInt, io.wispforest.owo.ui.core.UIComponent);
+    Code:
+         0: aload_0
+         1: aload         5
+         3: invokevirtual #178                // Method java/util/ArrayList.add:(Ljava/lang/Object;)Z
+         6: pop
+         7: aload         5
+         9: aload_1
+        10: aload_1
+        11: invokestatic  #260                // Method io/wispforest/owo/ui/container/FlowLayout.access$1400:(Lio/wispforest/owo/ui/container/FlowLayout;)I
+        14: aload_2
+        15: invokevirtual #185                // Method io/wispforest/owo/ui/core/Insets.left:()I
+        18: iadd
+        19: aload         5
+        21: invokeinterface #188,  1          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.margins:()Lio/wispforest/owo/ui/core/AnimatableProperty;
+        26: invokevirtual #7                  // Method io/wispforest/owo/ui/core/AnimatableProperty.get:()Ljava/lang/Object;
+        29: checkcast     #40                 // class io/wispforest/owo/ui/core/Insets
+        32: invokevirtual #185                // Method io/wispforest/owo/ui/core/Insets.left:()I
+        35: iadd
+        36: aload_1
+        37: invokestatic  #263                // Method io/wispforest/owo/ui/container/FlowLayout.access$1500:(Lio/wispforest/owo/ui/container/FlowLayout;)I
+        40: aload_2
+        41: invokevirtual #195                // Method io/wispforest/owo/ui/core/Insets.top:()I
+        44: iadd
+        45: aload         5
+        47: invokeinterface #188,  1          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.margins:()Lio/wispforest/owo/ui/core/AnimatableProperty;
+        52: invokevirtual #7                  // Method io/wispforest/owo/ui/core/AnimatableProperty.get:()Ljava/lang/Object;
+        55: checkcast     #40                 // class io/wispforest/owo/ui/core/Insets
+        58: invokevirtual #195                // Method io/wispforest/owo/ui/core/Insets.top:()I
+        61: iadd
+        62: aload_3
+        63: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+        66: iadd
+        67: invokeinterface #211,  4          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.mount:(Lio/wispforest/owo/ui/core/ParentUIComponent;II)V
+        72: aload         5
+        74: invokeinterface #198,  1          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.fullSize:()Lio/wispforest/owo/ui/core/Size;
+        79: astore        6
+        81: aload_3
+        82: aload         6
+        84: invokevirtual #217                // Method io/wispforest/owo/ui/core/Size.height:()I
+        87: aload_1
+        88: invokevirtual #82                 // Method io/wispforest/owo/ui/container/FlowLayout.gap:()I
+        91: iadd
+        92: invokevirtual #215                // Method org/apache/commons/lang3/mutable/MutableInt.add:(I)V
+        95: aload         6
+        97: invokevirtual #202                // Method io/wispforest/owo/ui/core/Size.width:()I
+       100: aload         4
+       102: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+       105: if_icmple     118
+       108: aload         4
+       110: aload         6
+       112: invokevirtual #202                // Method io/wispforest/owo/ui/core/Size.width:()I
+       115: invokevirtual #209                // Method org/apache/commons/lang3/mutable/MutableInt.setValue:(I)V
+       118: return
+
+  private static void lambda$static$4(io.wispforest.owo.ui.container.FlowLayout, io.wispforest.owo.ui.core.UIComponent, java.util.function.Consumer);
+    Code:
+         0: aload_0
+         1: aload_1
+         2: aload_2
+         3: invokestatic  #266                // Method io/wispforest/owo/ui/container/FlowLayout.access$1300:(Lio/wispforest/owo/ui/container/FlowLayout;Lio/wispforest/owo/ui/core/UIComponent;Ljava/util/function/Consumer;)V
+         6: return
+
+  private static void lambda$static$0(io.wispforest.owo.ui.container.FlowLayout);
+    Code:
+         0: new           #27                 // class org/apache/commons/lang3/mutable/MutableInt
+         3: dup
+         4: iconst_0
+         5: invokespecial #29                 // Method org/apache/commons/lang3/mutable/MutableInt."<init>":(I)V
+         8: astore_1
+         9: new           #27                 // class org/apache/commons/lang3/mutable/MutableInt
+        12: dup
+        13: iconst_0
+        14: invokespecial #29                 // Method org/apache/commons/lang3/mutable/MutableInt."<init>":(I)V
+        17: astore_2
+        18: new           #32                 // class java/util/ArrayList
+        21: dup
+        22: invokespecial #34                 // Method java/util/ArrayList."<init>":()V
+        25: astore_3
+        26: aload_0
+        27: invokestatic  #269                // Method io/wispforest/owo/ui/container/FlowLayout.access$000:(Lio/wispforest/owo/ui/container/FlowLayout;)Lio/wispforest/owo/ui/core/AnimatableProperty;
+        30: invokevirtual #7                  // Method io/wispforest/owo/ui/core/AnimatableProperty.get:()Ljava/lang/Object;
+        33: checkcast     #40                 // class io/wispforest/owo/ui/core/Insets
+        36: astore        4
+        38: aload_0
+        39: aload_0
+        40: invokestatic  #272                // Method io/wispforest/owo/ui/container/FlowLayout.access$100:(Lio/wispforest/owo/ui/container/FlowLayout;)Lio/wispforest/owo/ui/core/Size;
+        43: invokestatic  #275                // Method io/wispforest/owo/ui/container/FlowLayout.access$200:(Lio/wispforest/owo/ui/container/FlowLayout;Lio/wispforest/owo/ui/core/Size;)Lio/wispforest/owo/ui/core/Size;
+        46: astore        5
+        48: aload_0
+        49: getfield      #50                 // Field io/wispforest/owo/ui/container/FlowLayout.children:Ljava/util/List;
+        52: aload         5
+        54: iconst_0
+        55: aload_0
+        56: invokevirtual #82                 // Method io/wispforest/owo/ui/container/FlowLayout.gap:()I
+        59: invokestatic  #237                // Method io/wispforest/owo/ui/util/MountingHelper.inflateWithExpand:(Ljava/util/List;Lio/wispforest/owo/ui/core/Size;ZI)V
+        62: aload_0
+        63: dup
+        64: invokestatic  #64                 // Method java/util/Objects.requireNonNull:(Ljava/lang/Object;)Ljava/lang/Object;
+        67: pop
+        68: astore        7
+        70: aload         7
+        72: invokedynamic #278,  0            // InvokeDynamic #5:accept:(Lio/wispforest/owo/ui/container/FlowLayout;)Lio/wispforest/owo/ui/util/MountingHelper$ComponentSink;
+        77: aload_0
+        78: getfield      #50                 // Field io/wispforest/owo/ui/container/FlowLayout.children:Ljava/util/List;
+        81: aload_3
+        82: aload_0
+        83: aload         4
+        85: aload_1
+        86: aload_2
+        87: invokedynamic #279,  0            // InvokeDynamic #6:accept:(Ljava/util/ArrayList;Lio/wispforest/owo/ui/container/FlowLayout;Lio/wispforest/owo/ui/core/Insets;Lorg/apache/commons/lang3/mutable/MutableInt;Lorg/apache/commons/lang3/mutable/MutableInt;)Ljava/util/function/Consumer;
+        92: invokestatic  #76                 // Method io/wispforest/owo/ui/util/MountingHelper.mountEarly:(Lio/wispforest/owo/ui/util/MountingHelper$ComponentSink;Ljava/util/List;Ljava/util/function/Consumer;)Lio/wispforest/owo/ui/util/MountingHelper;
+        95: astore        6
+        97: aload_1
+        98: aload_0
+        99: invokevirtual #82                 // Method io/wispforest/owo/ui/container/FlowLayout.gap:()I
+       102: invokevirtual #86                 // Method org/apache/commons/lang3/mutable/MutableInt.subtract:(I)V
+       105: aload_0
+       106: aload_1
+       107: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+       110: aload_2
+       111: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+       114: invokestatic  #92                 // Method io/wispforest/owo/ui/core/Size.of:(II)Lio/wispforest/owo/ui/core/Size;
+       117: putfield      #98                 // Field io/wispforest/owo/ui/container/FlowLayout.contentSize:Lio/wispforest/owo/ui/core/Size;
+       120: aload_0
+       121: invokestatic  #280                // Method io/wispforest/owo/ui/container/FlowLayout.access$600:(Lio/wispforest/owo/ui/container/FlowLayout;)V
+       124: aload_0
+       125: invokevirtual #106                // Method io/wispforest/owo/ui/container/FlowLayout.verticalAlignment:()Lio/wispforest/owo/ui/core/VerticalAlignment;
+       128: getstatic     #110                // Field io/wispforest/owo/ui/core/VerticalAlignment.TOP:Lio/wispforest/owo/ui/core/VerticalAlignment;
+       131: if_acmpeq     207
+       134: aload_3
+       135: invokevirtual #116                // Method java/util/ArrayList.iterator:()Ljava/util/Iterator;
+       138: astore        7
+       140: aload         7
+       142: invokeinterface #120,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+       147: ifeq          207
+       150: aload         7
+       152: invokeinterface #125,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+       157: checkcast     #128                // class io/wispforest/owo/ui/core/UIComponent
+       160: astore        8
+       162: aload         8
+       164: aload         8
+       166: invokeinterface #130,  1          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.baseY:()I
+       171: aload_0
+       172: invokevirtual #106                // Method io/wispforest/owo/ui/container/FlowLayout.verticalAlignment:()Lio/wispforest/owo/ui/core/VerticalAlignment;
+       175: aload         8
+       177: invokeinterface #198,  1          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.fullSize:()Lio/wispforest/owo/ui/core/Size;
+       182: invokevirtual #217                // Method io/wispforest/owo/ui/core/Size.height:()I
+       185: aload_0
+       186: invokestatic  #283                // Method io/wispforest/owo/ui/container/FlowLayout.access$700:(Lio/wispforest/owo/ui/container/FlowLayout;)I
+       189: aload         4
+       191: invokevirtual #137                // Method io/wispforest/owo/ui/core/Insets.vertical:()I
+       194: isub
+       195: invokevirtual #140                // Method io/wispforest/owo/ui/core/VerticalAlignment.align:(II)I
+       198: iadd
+       199: invokeinterface #144,  2          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.updateY:(I)V
+       204: goto          140
+       207: aload_0
+       208: invokevirtual #147                // Method io/wispforest/owo/ui/container/FlowLayout.horizontalAlignment:()Lio/wispforest/owo/ui/core/HorizontalAlignment;
+       211: getstatic     #151                // Field io/wispforest/owo/ui/core/HorizontalAlignment.LEFT:Lio/wispforest/owo/ui/core/HorizontalAlignment;
+       214: if_acmpeq     323
+       217: aload_3
+       218: invokevirtual #116                // Method java/util/ArrayList.iterator:()Ljava/util/Iterator;
+       221: astore        7
+       223: aload         7
+       225: invokeinterface #120,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+       230: ifeq          323
+       233: aload         7
+       235: invokeinterface #125,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+       240: checkcast     #128                // class io/wispforest/owo/ui/core/UIComponent
+       243: astore        8
+       245: aload_0
+       246: invokevirtual #147                // Method io/wispforest/owo/ui/container/FlowLayout.horizontalAlignment:()Lio/wispforest/owo/ui/core/HorizontalAlignment;
+       249: getstatic     #157                // Field io/wispforest/owo/ui/core/HorizontalAlignment.CENTER:Lio/wispforest/owo/ui/core/HorizontalAlignment;
+       252: if_acmpne     290
+       255: aload         8
+       257: aload         8
+       259: invokeinterface #160,  1          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.baseX:()I
+       264: aload_0
+       265: invokestatic  #286                // Method io/wispforest/owo/ui/container/FlowLayout.access$800:(Lio/wispforest/owo/ui/container/FlowLayout;)I
+       268: aload         4
+       270: invokevirtual #166                // Method io/wispforest/owo/ui/core/Insets.horizontal:()I
+       273: isub
+       274: aload_1
+       275: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+       278: isub
+       279: iconst_2
+       280: idiv
+       281: iadd
+       282: invokeinterface #169,  2          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.updateX:(I)V
+       287: goto          320
+       290: aload         8
+       292: aload         8
+       294: invokeinterface #160,  1          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.baseX:()I
+       299: aload_0
+       300: invokestatic  #289                // Method io/wispforest/owo/ui/container/FlowLayout.access$900:(Lio/wispforest/owo/ui/container/FlowLayout;)I
+       303: aload         4
+       305: invokevirtual #166                // Method io/wispforest/owo/ui/core/Insets.horizontal:()I
+       308: isub
+       309: aload_1
+       310: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+       313: isub
+       314: iadd
+       315: invokeinterface #169,  2          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.updateX:(I)V
+       320: goto          223
+       323: aload         6
+       325: invokevirtual #175                // Method io/wispforest/owo/ui/util/MountingHelper.mountLate:()V
+       328: return
+
+  private static void lambda$static$2(java.util.ArrayList, io.wispforest.owo.ui.container.FlowLayout, io.wispforest.owo.ui.core.Insets, org.apache.commons.lang3.mutable.MutableInt, org.apache.commons.lang3.mutable.MutableInt, io.wispforest.owo.ui.core.UIComponent);
+    Code:
+         0: aload_0
+         1: aload         5
+         3: invokevirtual #178                // Method java/util/ArrayList.add:(Ljava/lang/Object;)Z
+         6: pop
+         7: aload         5
+         9: aload_1
+        10: aload_1
+        11: invokestatic  #292                // Method io/wispforest/owo/ui/container/FlowLayout.access$400:(Lio/wispforest/owo/ui/container/FlowLayout;)I
+        14: aload_2
+        15: invokevirtual #185                // Method io/wispforest/owo/ui/core/Insets.left:()I
+        18: iadd
+        19: aload         5
+        21: invokeinterface #188,  1          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.margins:()Lio/wispforest/owo/ui/core/AnimatableProperty;
+        26: invokevirtual #7                  // Method io/wispforest/owo/ui/core/AnimatableProperty.get:()Ljava/lang/Object;
+        29: checkcast     #40                 // class io/wispforest/owo/ui/core/Insets
+        32: invokevirtual #185                // Method io/wispforest/owo/ui/core/Insets.left:()I
+        35: iadd
+        36: aload_3
+        37: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+        40: iadd
+        41: aload_1
+        42: invokestatic  #295                // Method io/wispforest/owo/ui/container/FlowLayout.access$500:(Lio/wispforest/owo/ui/container/FlowLayout;)I
+        45: aload_2
+        46: invokevirtual #195                // Method io/wispforest/owo/ui/core/Insets.top:()I
+        49: iadd
+        50: aload         5
+        52: invokeinterface #188,  1          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.margins:()Lio/wispforest/owo/ui/core/AnimatableProperty;
+        57: invokevirtual #7                  // Method io/wispforest/owo/ui/core/AnimatableProperty.get:()Ljava/lang/Object;
+        60: checkcast     #40                 // class io/wispforest/owo/ui/core/Insets
+        63: invokevirtual #195                // Method io/wispforest/owo/ui/core/Insets.top:()I
+        66: iadd
+        67: invokeinterface #211,  4          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.mount:(Lio/wispforest/owo/ui/core/ParentUIComponent;II)V
+        72: aload         5
+        74: invokeinterface #198,  1          // InterfaceMethod io/wispforest/owo/ui/core/UIComponent.fullSize:()Lio/wispforest/owo/ui/core/Size;
+        79: astore        6
+        81: aload_3
+        82: aload         6
+        84: invokevirtual #202                // Method io/wispforest/owo/ui/core/Size.width:()I
+        87: aload_1
+        88: invokevirtual #82                 // Method io/wispforest/owo/ui/container/FlowLayout.gap:()I
+        91: iadd
+        92: invokevirtual #215                // Method org/apache/commons/lang3/mutable/MutableInt.add:(I)V
+        95: aload         6
+        97: invokevirtual #217                // Method io/wispforest/owo/ui/core/Size.height:()I
+       100: aload         4
+       102: invokevirtual #89                 // Method org/apache/commons/lang3/mutable/MutableInt.intValue:()I
+       105: if_icmple     118
+       108: aload         4
+       110: aload         6
+       112: invokevirtual #217                // Method io/wispforest/owo/ui/core/Size.height:()I
+       115: invokevirtual #209                // Method org/apache/commons/lang3/mutable/MutableInt.setValue:(I)V
+       118: return
+
+  private static void lambda$static$1(io.wispforest.owo.ui.container.FlowLayout, io.wispforest.owo.ui.core.UIComponent, java.util.function.Consumer);
+    Code:
+         0: aload_0
+         1: aload_1
+         2: aload_2
+         3: invokestatic  #298                // Method io/wispforest/owo/ui/container/FlowLayout.access$300:(Lio/wispforest/owo/ui/container/FlowLayout;Lio/wispforest/owo/ui/core/UIComponent;Ljava/util/function/Consumer;)V
+         6: return
+
+  static {};
+    Code:
+         0: invokedynamic #301,  0            // InvokeDynamic #7:layout:()Lio/wispforest/owo/ui/container/FlowLayout$Algorithm;
+         5: putstatic     #305                // Field HORIZONTAL:Lio/wispforest/owo/ui/container/FlowLayout$Algorithm;
+         8: invokedynamic #311,  0            // InvokeDynamic #8:layout:()Lio/wispforest/owo/ui/container/FlowLayout$Algorithm;
+        13: putstatic     #312                // Field VERTICAL:Lio/wispforest/owo/ui/container/FlowLayout$Algorithm;
+        16: invokedynamic #315,  0            // InvokeDynamic #9:layout:()Lio/wispforest/owo/ui/container/FlowLayout$Algorithm;
+        21: putstatic     #316                // Field LTR_TEXT:Lio/wispforest/owo/ui/container/FlowLayout$Algorithm;
+        24: return
+}
