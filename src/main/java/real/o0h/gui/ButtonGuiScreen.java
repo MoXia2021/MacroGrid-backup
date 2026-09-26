@@ -99,15 +99,23 @@ public class ButtonGuiScreen extends MacroGridScreen {
         panel.child(titleRow);
 
         // Profile tab bar (ported from 3.4): switch / rename / delete /
-        // create profiles. The active profile's buttons are shown below.
+        // create profiles. Wrapped in a horizontal scroll container so many
+        // profiles stay reachable with the mouse wheel, like 3.4.
         tabBarLayout = UIContainers.horizontalFlow(
-            Sizing.fill(100),
-            Sizing.content()
+            Sizing.content(),
+            Sizing.fixed(18)
         );
         tabBarLayout.verticalAlignment(VerticalAlignment.CENTER);
-tabBarLayout.gap(2);
-tabBarLayout.margins(Insets.bottom(6));
-        panel.child(tabBarLayout);
+        tabBarLayout.gap(2);
+        var tabScroll = UIContainers.horizontalScroll(
+            Sizing.fill(100),
+            Sizing.fixed(21),
+            tabBarLayout
+        );
+        tabScroll.scrollbar(ScrollContainer.Scrollbar.vanillaFlat());
+        tabScroll.scrollbarThiccness(3);
+        tabScroll.margins(Insets.bottom(6));
+        panel.child(tabScroll);
         rebuildTabs();
 
         // Search row styled like 3.4: dark strip with a top hairline,
