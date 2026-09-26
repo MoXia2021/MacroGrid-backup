@@ -158,10 +158,10 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
         colorIconRow.gap(4).margins(Insets.bottom(6));
 
         colorButton = UIComponents.button(Component.literal(colorLabel()), b ->
-            cycleColor()
+            openColorPicker()
         );
         colorButton.horizontalSizing(Sizing.fixed(PAIR_BTN));
-        colorButton.tooltip(Component.literal("Click to cycle through colors"));
+        colorButton.tooltip(Component.literal("Click to pick a color"));
 
         ButtonComponent iconButton = UIComponents.button(
             Component.literal(iconLabel()),
@@ -335,10 +335,7 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
         if (
             currentColor == ButtonData.ButtonColor.DEFAULT
         ) return "§7Color  ·  Default";
-        String name =
-            currentColor.name().charAt(0) +
-            currentColor.name().substring(1).toLowerCase();
-        return "Color  ·  " + currentColor.getCode() + name;
+        return "Color  ·  " + currentColor.getDisplayName();
     }
 
     private String iconLabel() {
@@ -457,14 +454,33 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
         }
     }
 
-    private void cycleColor() {
-        ButtonData.ButtonColor[] colors = ButtonData.ButtonColor.values();
-        int cur = Arrays.asList(colors).indexOf(currentColor);
-        currentColor = colors[(cur + 1) % colors.length];
-        if (colorButton != null) colorButton.setMessage(
-            Component.literal(colorLabel())
+    // No longer used (color button now opens the picker); kept for reference.
+    // private void cycleColor() {
+    //     ButtonData.ButtonColor[] colors = ButtonData.ButtonColor.values();
+    //     int cur = Arrays.asList(colors).indexOf(currentColor);
+    //     currentColor = colors[(cur + 1) % colors.length];
+    //     if (colorButton != null) colorButton.setMessage(
+    //         Component.literal(colorLabel())
+    //     );
+    //     updatePreview();
+    // }
+
+    private void openColorPicker() {
+        ButtonData current = buildButtonData();
+        Minecraft.getInstance().setScreen(
+            new ColorSelectionScreen(
+                color -> {
+                    current.setColor(color);
+                    Minecraft.getInstance().setScreen(
+                        new EditButtonScreen(current, onSave, isAddMode)
+                    );
+                },
+                () ->
+                    Minecraft.getInstance().setScreen(
+                        new EditButtonScreen(current, onSave, isAddMode)
+                    )
+            )
         );
-        updatePreview();
     }
 
     private void openIconPicker() {

@@ -90,15 +90,32 @@ public class ButtonData {
 
     public enum ButtonColor {
         DEFAULT("Default", ""),
-        RED("Red", "§c"),
-        GREEN("Green", "§a"),
-        BLUE("Blue", "§9"),
-        YELLOW("Yellow", "§e"),
+        // 16 standard Minecraft format-code colors (§0-§f)
+        BLACK("Black", "§0"),
+        DARK_BLUE("Dark Blue", "§1"),
+        DARK_GREEN("Dark Green", "§2"),
+        DARK_AQUA("Dark Aqua", "§3"),
+        DARK_RED("Dark Red", "§4"),
         PURPLE("Purple", "§5"),
-        AQUA("Aqua", "§b"),
         GOLD("Gold", "§6"),
         GRAY("Gray", "§7"),
-        BLACK("Black", "§0");
+        DARK_GRAY("Dark Gray", "§8"),
+        BLUE("Blue", "§9"),
+        GREEN("Green", "§a"),
+        AQUA("Aqua", "§b"),
+        RED("Red", "§c"),
+        LIGHT_PURPLE("Light Purple", "§d"),
+        YELLOW("Yellow", "§e"),
+        WHITE("White", "§f"),
+        // 8 extended colors using Minecraft custom RGB format codes (§xRRGGBB)
+        ORANGE("Orange", "§x§F§F§A§5§0§0"),
+        PINK("Pink", "§x§F§F§C§0§C§B"),
+        LIME("Lime", "§x§3§2§C§D§3§2"),
+        CYAN("Cyan", "§x§0§0§C§E§D§1"),
+        MAGENTA("Magenta", "§x§F§F§0§0§F§F"),
+        BROWN("Brown", "§x§8§B§4§5§1§3"),
+        NAVY("Navy", "§x§0§0§0§0§8§0"),
+        MAROON("Maroon", "§x§8§0§0§0§0§0");
 
         private final String humanName;
         private final String code;
