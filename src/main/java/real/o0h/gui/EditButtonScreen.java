@@ -29,7 +29,6 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
     private ButtonData.ButtonIcon currentIcon;
 
     private TextBoxComponent nameField;
-    private ButtonComponent colorButton;
     private LabelComponent previewLabel;
     private FlowLayout commandListLayout;
 
@@ -114,7 +113,7 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
 
     @Override
     protected void build(FlowLayout root) {
-        root.surface(Surface.VANILLA_TRANSLUCENT)
+        root.surface(Surface.flat(UITheme.COL_DIM))
             .horizontalAlignment(HorizontalAlignment.CENTER)
             .verticalAlignment(VerticalAlignment.CENTER);
 
@@ -122,14 +121,14 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
             Sizing.fixed(320),
             Sizing.content()
         );
-        panel.surface(Surface.flat(0xC8000000)).padding(Insets.of(8));
+        panel.surface(UITheme.panel()).padding(Insets.of(8));
 
         panel.child(
             UIComponents.label(
                 Component.literal(
                     isAddMode ? "▶  Add New Button" : "▶  Edit Button"
-                ).withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD)
-            ).margins(Insets.bottom(8))
+                ).withStyle(ChatFormatting.BOLD)
+            ).color(Color.ofArgb(UITheme.COL_TEXT)).margins(Insets.bottom(8))
         );
 
         FlowLayout nameCard = card();
@@ -157,17 +156,16 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
         );
         colorIconRow.gap(4).margins(Insets.bottom(6));
 
-        colorButton = UIComponents.button(Component.literal(colorLabel()), b ->
-            openColorPicker()
+        FlowLayout colorButton = clickableCard(
+            Component.literal(colorLabel()), UITheme.COL_ACCENT_DIM, PAIR_BTN,
+            () -> openColorPicker()
         );
-        colorButton.horizontalSizing(Sizing.fixed(PAIR_BTN));
         colorButton.tooltip(Component.literal("Click to pick a color"));
 
-        ButtonComponent iconButton = UIComponents.button(
-            Component.literal(iconLabel()),
-            b -> openIconPicker()
+        FlowLayout iconButton = clickableCard(
+            Component.literal(iconLabel()), UITheme.COL_ACCENT_DIM, PAIR_BTN,
+            () -> openIconPicker()
         );
-        iconButton.horizontalSizing(Sizing.fixed(PAIR_BTN));
         iconButton.tooltip(Component.literal("Click to pick an icon"));
 
         colorIconRow.child(colorButton).child(iconButton);
@@ -255,17 +253,17 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
         );
         saveRow.gap(4);
 
-        ButtonComponent saveBtn = UIComponents.button(
-            Component.literal("§a✔  Save"),
-            b -> saveAndClose()
+        FlowLayout saveBtn = clickablePill(
+            Component.literal(UITheme.fmt(UITheme.COL_ACCENT) + "✔  Save"),
+            UITheme.COL_ACCENT, UITheme.COL_ACCENT_DIM, true, SAVE_BTN,
+            this::saveAndClose
         );
-        saveBtn.horizontalSizing(Sizing.fixed(SAVE_BTN));
 
-        ButtonComponent cancelBtn = UIComponents.button(
-            Component.literal("§c✖  Cancel"),
-            b -> onClose()
+        FlowLayout cancelBtn = clickablePill(
+            Component.literal(UITheme.fmt(UITheme.COL_DANGER) + "✖  Cancel"),
+            UITheme.COL_DANGER, UITheme.COL_DANGER_DIM, false, SAVE_BTN,
+            this::onClose
         );
-        cancelBtn.horizontalSizing(Sizing.fixed(SAVE_BTN));
 
         saveRow.child(saveBtn).child(cancelBtn);
         panel.child(saveRow);
@@ -301,7 +299,7 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
             Sizing.fill(100),
             Sizing.content()
         );
-        card.surface(Surface.flat(0x44333333))
+        card.surface(UITheme.subCard())
             .padding(Insets.of(6))
             .margins(Insets.bottom(6));
         return card;
@@ -309,10 +307,54 @@ public class EditButtonScreen extends BaseOwoScreen<FlowLayout> {
 
     private static LabelComponent cardHeader(String text) {
         LabelComponent label = UIComponents.label(
-            Component.literal(text + " ─").withStyle(ChatFormatting.GRAY)
+            Component.literal(text + " ─")
         );
-        label.margins(Insets.bottom(4));
+        label.color(Color.ofArgb(UITheme.COL_TEXT_DIM)).margins(Insets.bottom(4));
         return label;
+    }
+
+    /**
+     * Card-style clickable element (FlowLayout + label), because owo leaf
+     * buttons cannot take custom surfaces. Left-click triggers onClick.
+     */
+    private FlowLayout clickableCard(
+        Component text, int accent, int width, Runnable onClick
+    ) {
+        FlowLayout card = UIContainers.horizontalFlow(
+            Sizing.fixed(width), Sizing.fixed(18)
+        );
+        card.surface(UITheme.card(accent));
+        card.horizontalAlignment(HorizontalAlignment.CENTER);
+        card.verticalAlignment(VerticalAlignment.CENTER);
+        LabelComponent lbl = UIComponents.label(text);
+        lbl.shadow(false);
+        card.child(lbl);
+        card.mouseDown().subscribe((click, doubled) -> {
+            if (click.button() == 0) { onClick.run(); return true; }
+            return false;
+        });
+        return card;
+    }
+
+    /** Pill-style clickable element (FlowLayout + label) for the save row. */
+    private FlowLayout clickablePill(
+        Component text, int accent, int accentDim, boolean active,
+        int width, Runnable onClick
+    ) {
+        FlowLayout pill = UIContainers.horizontalFlow(
+            Sizing.fixed(width), Sizing.fixed(18)
+        );
+        pill.surface(UITheme.pill(accent, accentDim, active));
+        pill.horizontalAlignment(HorizontalAlignment.CENTER);
+        pill.verticalAlignment(VerticalAlignment.CENTER);
+        LabelComponent lbl = UIComponents.label(text);
+        lbl.shadow(false);
+        pill.child(lbl);
+        pill.mouseDown().subscribe((click, doubled) -> {
+            if (click.button() == 0) { onClick.run(); return true; }
+            return false;
+        });
+        return pill;
     }
 
     private void updatePreview() {

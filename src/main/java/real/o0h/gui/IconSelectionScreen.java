@@ -30,16 +30,17 @@ public class IconSelectionScreen extends BaseOwoScreen<FlowLayout> {
 
     @Override
     protected void build(FlowLayout root) {
-        root.surface(Surface.VANILLA_TRANSLUCENT)
+        root.surface(Surface.flat(UITheme.COL_DIM))
                 .horizontalAlignment(HorizontalAlignment.CENTER)
                 .verticalAlignment(VerticalAlignment.CENTER);
 
         FlowLayout panel = UIContainers.verticalFlow(Sizing.fixed(300), Sizing.content());
-        panel.surface(Surface.flat(0xB0000000)).padding(Insets.of(6));
+        panel.surface(UITheme.panel()).padding(Insets.of(6));
 
         panel.child(UIComponents.label(
                         Component.literal("Choose an Icon")
-                                .withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD))
+                                .withStyle(ChatFormatting.BOLD))
+                .color(Color.ofArgb(UITheme.COL_TEXT))
                 .margins(Insets.bottom(4)));
 
         FlowLayout iconGrid = UIContainers.verticalFlow(Sizing.fill(100), Sizing.content());
