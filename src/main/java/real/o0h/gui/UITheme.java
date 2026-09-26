@@ -103,6 +103,22 @@ public final class UITheme {
         };
     }
 
+    /**
+     * Profile tab (3.4 style): accent-tinted fill with a 2px accent line
+     * along the bottom edge when active, faint fill when inactive.
+     */
+    public static Surface tab(boolean active) {
+        return (ctx, comp) -> {
+            ctx.fill(comp.x(), comp.y(),
+                    comp.x() + comp.width(), comp.y() + comp.height(),
+                    active ? COL_ACCENT_DIM : 0x14FFFFFF);
+            if (active) {
+                ctx.fill(comp.x(), comp.y() + comp.height() - 2,
+                        comp.x() + comp.width(), comp.y() + comp.height(), COL_ACCENT);
+            }
+        };
+    }
+
     /** Input row background: dark strip with a top hairline (search box style). */
     public static Surface inputStrip() {
         return (ctx, comp) -> {

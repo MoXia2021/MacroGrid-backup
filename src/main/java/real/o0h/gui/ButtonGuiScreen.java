@@ -39,6 +39,13 @@ public class ButtonGuiScreen extends BaseOwoScreen<FlowLayout> {
     private FlowLayout editModeBtn, moveModeBtn, deleteModeBtn;
     private LabelComponent editModeLbl, moveModeLbl, deleteModeLbl;
 
+    // Profile tab bar (ported from 3.4)
+    private FlowLayout tabBarLayout;
+    private boolean renamingProfile = false;
+    private boolean pendingDeleteProfile = false;
+    private TextBoxComponent renameField;
+    private boolean renameFocusPending = false;
+
     private boolean firstTick = true;
 
     @Override
@@ -50,6 +57,12 @@ public class ButtonGuiScreen extends BaseOwoScreen<FlowLayout> {
             if (uiAdapter != null) uiAdapter.rootComponent
                 .focusHandler()
                 .focus(null, UIComponent.FocusSource.MOUSE_CLICK);
+        }
+        if (renameFocusPending && renameField != null && uiAdapter != null) {
+            renameFocusPending = false;
+            uiAdapter.rootComponent
+                .focusHandler()
+                .focus(renameField, UIComponent.FocusSource.KEYBOARD_CYCLE);
         }
     }
 
@@ -98,6 +111,18 @@ public class ButtonGuiScreen extends BaseOwoScreen<FlowLayout> {
         countLabel.color(Color.ofArgb(UITheme.COL_TEXT_DIM));
         titleRow.child(countLabel);
         panel.child(titleRow);
+
+        // Profile tab bar (ported from 3.4): switch / rename / delete /
+        // create profiles. The active profile's buttons are shown below.
+        tabBarLayout = UIContainers.horizontalFlow(
+            Sizing.fill(100),
+            Sizing.content()
+        );
+        tabBarLayout.verticalAlignment(VerticalAlignment.CENTER);
+tabBarLayout.gap(2);
+tabBarLayout.margins(Insets.bottom(6));
+        panel.child(tabBarLayout);
+        rebuildTabs();
 
         // Search row styled like 3.4: dark strip with a top hairline,
         // borderless field with light text.
@@ -267,6 +292,158 @@ public class ButtonGuiScreen extends BaseOwoScreen<FlowLayout> {
                 (act ? UITheme.fmt(UITheme.COL_DANGER) : UITheme.fmt(UITheme.COL_TEXT_DIM)) + "✖ Del"
             ));
         }
+    }
+
+    /**
+     * (Re)build the profile tab bar: tab pills for each profile, rename/delete
+     * icons on the active tab, a trailing "+" to create a new profile. While
+     * renaming, shows an inline name field with confirm/cancel icons instead.
+     */
+    private void rebuildTabs() {
+        if (tabBarLayout == null) return;
+        tabBarLayout.clearChildren();
+
+        List<String> names = ButtonManager.getProfileNames();
+        String current = ButtonManager.getCurrentProfile();
+
+        if (renamingProfile) {
+            FlowLayout editRow = UIContainers.horizontalFlow(
+                Sizing.fill(100),
+                Sizing.fixed(18)
+            );
+            editRow.surface(UITheme.inputStrip());
+            editRow.verticalAlignment(VerticalAlignment.CENTER);
+            renameField = UIComponents.textBox(Sizing.fill(100));
+            renameField.setBordered(false);
+            renameField.setTextColor(UITheme.COL_TEXT);
+            renameField.setMaxLength(24);
+            renameField.setValue(current);
+            renameField.setSuggestion("Profile name");
+            renameField.onChanged().subscribe(s ->
+                renameField.setSuggestion(s.isEmpty() ? "Profile name" : "")
+            );
+            editRow.child(renameField);
+            FlowLayout okBtn = makePill(
+                Component.literal(UITheme.fmt(UITheme.COL_ACCENT) + "✓"),
+                UITheme.COL_ACCENT, UITheme.COL_ACCENT_DIM, false,
+                18, this::commitRename
+            );
+            okBtn.tooltip(Component.literal("Confirm rename"));
+            FlowLayout cancelBtn = makePill(
+                Component.literal(UITheme.fmt(UITheme.COL_DANGER) + "✕"),
+                UITheme.COL_DANGER, UITheme.COL_DANGER_DIM, false,
+                18, () -> { renamingProfile = false; rebuildTabs(); }
+            );
+            cancelBtn.tooltip(Component.literal("Cancel rename"));
+            editRow.child(okBtn);
+            editRow.child(cancelBtn);
+            editRow.gap(2);
+            tabBarLayout.child(editRow);
+            renameFocusPending = true;
+            return;
+        }
+
+        for (String name : names) {
+            boolean active = name.equals(current);
+            FlowLayout tab = UIContainers.horizontalFlow(
+                Sizing.content(),
+                Sizing.fixed(18)
+            );
+            tab.surface(UITheme.tab(active));
+            tab.horizontalAlignment(HorizontalAlignment.CENTER);
+            tab.verticalAlignment(VerticalAlignment.CENTER);
+            tab.padding(Insets.horizontal(8));
+            LabelComponent lbl = UIComponents.label(Component.literal(name));
+            lbl.shadow(false);
+            lbl.color(Color.ofArgb(active ? UITheme.COL_TEXT : UITheme.COL_TEXT_DIM));
+            tab.child(lbl);
+            final String tabName = name;
+            tab.mouseDown().subscribe((click, doubled) -> {
+                if (click.button() == 0) {
+                    if (!tabName.equals(ButtonManager.getCurrentProfile())) {
+                        ButtonManager.setCurrentProfile(tabName);
+                        reopen();
+                    }
+                    return true;
+                }
+                return false;
+            });
+            tab.tooltip(Component.literal(
+                active ? "Current profile" : "Switch to " + tabName
+            ));
+            tabBarLayout.child(tab);
+
+            if (active) {
+                // Rename icon: edit the current profile's name.
+                FlowLayout renameIcon = makePill(
+                    Component.literal("✎"),
+                    UITheme.COL_TEXT_DIM, 0x18FFFFFF, false,
+                    14, () -> { renamingProfile = true; rebuildTabs(); }
+                );
+                renameIcon.tooltip(Component.literal("Rename profile"));
+                tabBarLayout.child(renameIcon);
+
+                // Delete icon, only when more than one profile exists.
+                if (names.size() > 1) {
+                    FlowLayout delIcon = makePill(
+                        Component.literal(
+                            pendingDeleteProfile
+                                ? UITheme.fmt(UITheme.COL_DANGER) + "✕"
+                                : "✕"
+                        ),
+                        UITheme.COL_DANGER, 0x18FFFFFF, pendingDeleteProfile,
+                        14, () -> {
+                            if (pendingDeleteProfile) {
+                                ButtonManager.deleteProfile(
+                                    ButtonManager.getCurrentProfile()
+                                );
+                                pendingDeleteProfile = false;
+                                reopen();
+                            } else {
+                                pendingDeleteProfile = true;
+                                rebuildTabs();
+                            }
+                        }
+                    );
+                    delIcon.tooltip(Component.literal(
+                        pendingDeleteProfile
+                            ? "Click again to confirm deletion"
+                            : "Delete profile"
+                    ));
+                    tabBarLayout.child(delIcon);
+                }
+            }
+        }
+
+        // Create-new-profile icon at the end of the bar.
+        FlowLayout addIcon = makePill(
+            Component.literal(UITheme.fmt(UITheme.COL_ACCENT) + "+"),
+            UITheme.COL_ACCENT, UITheme.COL_ACCENT_DIM, false,
+            14, () -> {
+                ButtonManager.createProfile(null);
+                reopen();
+            }
+        );
+        addIcon.tooltip(Component.literal("Create new profile"));
+        tabBarLayout.child(addIcon);
+    }
+
+    /** Confirm the inline profile rename and reopen. */
+    private void commitRename() {
+        if (renameField == null) return;
+        String newName = renameField.getValue().trim();
+        if (!newName.isEmpty()) {
+            ButtonManager.renameProfile(
+                ButtonManager.getCurrentProfile(), newName
+            );
+        }
+        renamingProfile = false;
+        reopen();
+    }
+
+    /** Reopen the main screen after a profile operation. */
+    private void reopen() {
+        Minecraft.getInstance().setScreen(new ButtonGuiScreen());
     }
 
     private void rebuildGrid() {
