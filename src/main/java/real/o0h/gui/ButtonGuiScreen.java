@@ -320,6 +320,9 @@ tabBarLayout.margins(Insets.bottom(6));
             renameField.setMaxLength(24);
             renameField.setValue(current);
             renameField.setSuggestion("");
+            // Select the whole name so typing replaces it instead of appending.
+            renameField.setCursorPosition(renameField.getValue().length());
+            renameField.setHighlightPos(0);
             renameField.onChanged().subscribe(s ->
                 renameField.setSuggestion(s.isEmpty() ? "Profile name" : "")
             );
